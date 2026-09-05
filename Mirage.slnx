@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/Mirage/">
+    <Project Path="Mirage/Mirage.Core/Mirage.Core.csproj" />
+  </Folder>
+</Solution>
