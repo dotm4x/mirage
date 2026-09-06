@@ -11,7 +11,7 @@ public interface IDestroyable
     bool Destroyed { get; }
 
     /// <summary>
-    ///   Destroy the object.
+    ///   Destroys the object.
     /// </summary>
     void Destroy();
 }
