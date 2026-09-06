@@ -5,13 +5,13 @@ namespace Mirage.Core.Interfaces;
 /// </summary>
 public interface IDestroyable
 {
-  /// <summary>
-  ///   Indicates whether the object has been destroyed.
-  /// </summary>
-  bool Disposed { get; }
+    /// <summary>
+    ///   Indicates whether the object has been destroyed.
+    /// </summary>
+    bool Destroyed { get; }
 
-  /// <summary>
-  ///   Destroy the object.
-  /// </summary>
-  void Dispose();
+    /// <summary>
+    ///   Destroy the object.
+    /// </summary>
+    void Destroy();
 }
