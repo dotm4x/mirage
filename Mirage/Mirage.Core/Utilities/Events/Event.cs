@@ -124,7 +124,9 @@ public abstract class Event<TPayload> : IDestroyable
     public void Destroy()
     {
         if (Destroyed)
-            return;
+        {
+            throw new InvalidOperationException("Event is already destroyed, cannot destroy again");
+        }
 
         Connections.Clear();
         Destroyed = true;
