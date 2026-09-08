@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Mirage/">
     <Project Path="Mirage/Mirage.Core/Mirage.Core.csproj" />
+    <Project Path="Mirage/Mirage.Sandbox/Mirage.Sandbox.csproj" />
   </Folder>
 </Solution>
