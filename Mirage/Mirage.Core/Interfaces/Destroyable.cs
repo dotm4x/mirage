@@ -13,5 +13,8 @@ public interface IDestroyable
     /// <summary>
     ///   Destroys the object.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the object has already been destroyed
+    /// </exception>>
     void Destroy();
 }
