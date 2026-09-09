@@ -233,7 +233,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Group is already destroyed, cannot destroy");
+            throw new InvalidOperationException("Group is already destroyed, cannot destroy again");
         }
 
         Clear();
