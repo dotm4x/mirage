@@ -18,4 +18,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Mirage.Core\Mirage.Core.csproj" />
+  </ItemGroup>
+
 </Project>
