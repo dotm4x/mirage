@@ -89,6 +89,46 @@ public class GroupTest
     }
 
     [Fact]
+    public void Add_WhenItemIsAdded_FiresOnAdd()
+    {
+        var group = new Group<int>();
+        var received = new List<int>();
+
+        group.OnAdd.Connect(received.Add);
+
+        group.Add(1, 2, 3);
+
+        Assert.Equal([1, 2, 3], received);
+    }
+
+    [Fact]
+    public void Add_WhenLimitIsReached_FiresOnRemoveForTruncatedItem()
+    {
+        var group = new Group<int>(limit: 2) { 1, 2 };
+        var removed = new List<int>();
+
+        group.OnRemove.Connect(removed.Add);
+
+        group.Add(3);
+
+        Assert.Equal([1], removed);
+    }
+
+    [Fact]
+    public void Add_WhenLimitIsReached_FiresOnRemoveBeforeOnAdd()
+    {
+        var group = new Group<int>(limit: 2) { 1, 2 };
+        var events = new List<string>();
+
+        group.OnRemove.Connect(item => events.Add($"Remove:{item}"));
+        group.OnAdd.Connect(item => events.Add($"Add:{item}"));
+
+        group.Add(3);
+
+        Assert.Equal(["Remove:1", "Add:3"], events);
+    }
+
+    [Fact]
     public void Remove_WithExistingItem_RemovesItem()
     {
         var group = new Group<int> { { 1, 2, 3 } };
@@ -108,6 +148,32 @@ public class GroupTest
         return;
 
         void Action() => group.Remove(2);
+    }
+
+    [Fact]
+    public void Remove_WhenItemExists_FiresOnRemove()
+    {
+        var group = new Group<int> { { 1, 2, 3 } };
+        var removed = new List<int>();
+
+        group.OnRemove.Connect(removed.Add);
+
+        group.Remove(2);
+
+        Assert.Equal([2], removed);
+    }
+
+    [Fact]
+    public void Remove_WhenMultipleItemsExist_FiresOnRemoveForEachItem()
+    {
+        var group = new Group<int> { { 1, 2, 3 } };
+        var removed = new List<int>();
+
+        group.OnRemove.Connect(removed.Add);
+
+        group.Remove(1, 3);
+
+        Assert.Equal([1, 3], removed);
     }
 
     [Fact]
@@ -185,6 +251,46 @@ public class GroupTest
         Assert.Equal(0, group.Count);
         Assert.Empty(group.ToArray());
         Assert.False(group.Destroyed);
+    }
+
+    [Fact]
+    public void Clear_FiresOnClear()
+    {
+        var group = new Group<int> { { 1, 2, 3 } };
+        var fired = false;
+
+        group.OnClear.Connect(_ => fired = true);
+
+        group.Clear();
+
+        Assert.True(fired);
+    }
+
+    [Fact]
+    public void Clear_FiresOnRemoveForEveryItem()
+    {
+        var group = new Group<int> { { 1, 2, 3 } };
+        var removed = new List<int>();
+
+        group.OnRemove.Connect(removed.Add);
+
+        group.Clear();
+
+        Assert.Equal([1, 2, 3], removed);
+    }
+
+    [Fact]
+    public void Clear_FiresOnClearBeforeOnRemove()
+    {
+        var group = new Group<int> { { 1, 2, 3 } };
+        var events = new List<string>();
+
+        group.OnClear.Connect(_ => events.Add("Clear"));
+        group.OnRemove.Connect(item => events.Add($"Remove:{item}"));
+
+        group.Clear();
+
+        Assert.Equal(["Clear", "Remove:1", "Remove:2", "Remove:3"], events);
     }
 
     [Fact]
