@@ -1,11 +1,21 @@
-# Mirage
+<img align="left" style="width:260px; margin-right: 15px;" src="./Assets/Logo/Background/logo.svg" width="288px">
+
+**Mirage is a game engine designed as a foundation for building interactive experiences.**
+
+Mirage is an engine currently under active development, focused on providing a foundation for creating games and other interactive software.
+
+The project is evolving continuously, with its architecture, APIs, and internal systems being shaped as development progresses.
+
+---
+
+<br>
 
 Mirage is a game engine currently under active development.
 
-It is being built as a general-purpose foundation for creating interactive experiences and games, with its architecture and capabilities evolving alongside the project.
+It is being developed as a general-purpose foundation for interactive experiences, with its architecture and capabilities evolving alongside the project.
 
 > [!WARNING]
-> Mirage is in an early stage of development. APIs, architecture, features, and project structure are subject to change.
+> Mirage is in an early stage of development. APIs, architecture, project structure, and other aspects of the project are subject to change.
 
 ## Development
 
@@ -19,11 +29,11 @@ git checkout develop
 
 ## Status
 
-Mirage is currently experimental and should not be considered stable or production-ready.
+Mirage is experimental and should not be considered stable or production-ready.
 
-The project is still being built, so documentation, examples, and other resources will be expanded as development progresses.
+The project is still being built, and its documentation, examples, and other resources will evolve as the project progresses.
 
-This README is temporary and will be expanded as the project takes shape.
+This README is temporary and will be expanded as Mirage takes shape.
 
 ## License
 
