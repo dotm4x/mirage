@@ -5,6 +5,80 @@ using Mirage.Core.Utilities.Events;
 namespace Mirage.Core.Utilities.Collections;
 
 /// <summary>
+/// Exposes a restricted interface for reading the items in a group without
+/// allowing modification or destruction.
+/// </summary>
+/// <typeparam name="TItem">The type of items stored in the group.</typeparam>
+public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
+{
+    /// <summary>
+    /// Gets the number of items currently contained in the group.
+    /// </summary>
+    public int Count { get; } = items.Count();
+
+    /// <summary>
+    /// Determines whether the specified item is contained in the group.
+    /// </summary>
+    /// <param name="item">The item to locate.</param>
+    /// <returns>
+    /// <see langword="true"/> if the item is contained in the group; otherwise,
+    /// <see langword="false"/>.
+    /// </returns>
+    public bool Contains(TItem item)
+    {
+        return items.Contains(item);
+    }
+
+    /// <summary>
+    /// Performs the specified action on each item in the group.
+    /// </summary>
+    /// <param name="action">The action to perform for each item.</param>
+    public void ForEach(Action<TItem> action)
+    {
+        foreach (var item in items)
+        {
+            action(item);
+        }
+    }
+
+    /// <summary>
+    /// Creates an array containing all items in the group.
+    /// </summary>
+    /// <returns>A new array containing the items in the group.</returns>
+    public TItem[] ToArray()
+    {
+        return [.. items];
+    }
+
+    /// <summary>
+    /// Creates a list containing all items in the group.
+    /// </summary>
+    /// <returns>A new list containing the items in the group.</returns>
+    public List<TItem> ToList()
+    {
+        return [.. items];
+    }
+
+    /// <summary>
+    /// Returns an enumerator that iterates through the items in the group.
+    /// </summary>
+    /// <returns>An enumerator for the group.</returns>
+    public IEnumerator<TItem> GetEnumerator()
+    {
+        return items.GetEnumerator();
+    }
+
+    /// <summary>
+    /// Returns an enumerator that iterates through the items in the group.
+    /// </summary>
+    /// <returns>An enumerator for the group.</returns>
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+}
+
+/// <summary>
 /// Represents a mutable collection of unique items, providing reactive events
 /// and an optional capacity limit with automatic truncation.
 /// </summary>
@@ -227,6 +301,19 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
         {
             Remove(item);
         }
+    }
+
+    /// <summary>
+    /// Exposes a restricted interface of the group without allowing modification
+    /// or destruction.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ReadonlyGroup{TItem}"/> that allows reading the group's items
+    /// without providing access to its mutating operations.
+    /// </returns>
+    public ReadonlyGroup<TItem> AsReadonly()
+    {
+        return new ReadonlyGroup<TItem>(items);
     }
 
     public void Destroy()
