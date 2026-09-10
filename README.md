@@ -10,10 +10,6 @@ The project is evolving continuously, with its architecture, APIs, and internal 
 
 <br>
 
-Mirage is a game engine currently under active development.
-
-It is being developed as a general-purpose foundation for interactive experiences, with its architecture and capabilities evolving alongside the project.
-
 > [!WARNING]
 > Mirage is in an early stage of development. APIs, architecture, project structure, and other aspects of the project are subject to change.
 
