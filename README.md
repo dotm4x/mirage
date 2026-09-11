@@ -4,16 +4,26 @@
   </a>
 </p>
 
-Mirage is a software project currently under active development.
+<p align="center">
+  A modular foundation for building games in C#.
+</p>
+
+---
+
+Mirage is an experimental C# game development framework focused on providing a modular foundation for building games.
+
+The project provides core systems for managing game lifecycle, modular composition, dependencies, state, communication, telemetry, and other common game infrastructure.
+
+Mirage is designed to provide a solid foundation for game systems while keeping its individual components reusable and composable.
 
 > [!WARNING]
-> Mirage is in an early stage of development. APIs, architecture, features, and project structure are subject to change.
+> Mirage is experimental software and is under active development. APIs, architecture, and project structure are subject to change.
 
 ## Development
 
-The active development of Mirage takes place on the `develop` branch.
+Active development takes place on the `develop` branch.
 
-If the default branch appears incomplete or empty, this is expected. The latest development work can be found in `develop`.
+If the default branch does not contain the latest development work, switch to `develop`:
 
 ```bash
 git checkout develop
@@ -21,9 +31,9 @@ git checkout develop
 
 ## Status
 
-Mirage is currently experimental and should not be considered stable or production-ready.
+Mirage is currently in active development.
 
-This README is temporary and will be expanded as the project progresses.
+The project is functional in several areas, but it is not yet considered stable or production-ready. Its systems and architecture will continue to evolve as development progresses.
 
 ## License
 
