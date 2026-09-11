@@ -10,18 +10,19 @@ namespace Mirage.Core.Telemetry;
 /// Represents a telemetry manager responsible for collecting, organizing,
 /// and dispatching messages across multiple prioritized output ports.
 /// </summary>
-public class Telemetry : IDestroyable
+public sealed class Telemetry : IDestroyable
 {
     /// <summary>
-    /// The group containing all registered telemetry output ports.
+    /// Gets the collection of registered telemetry output ports.
     /// </summary>
     public readonly Group<IPort> Ports = [];
+
     public bool Destroyed { get; private set; }
 
     private readonly Signal<Message> onSend = new();
 
     /// <summary>
-    /// Event fired when a message has been sent.
+    /// Signal fired when a message has been dispatched to all output ports.
     /// </summary>
     public readonly ReadonlyEvent<Message> OnSend;
 
@@ -120,6 +121,7 @@ public class Telemetry : IDestroyable
         }
 
         Ports.Destroy();
+        onSend.Destroy();
 
         Destroyed = true;
     }
