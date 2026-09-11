@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Mirage.Core.Exceptions;
 using Mirage.Core.Interfaces;
 using Mirage.Core.Modules;
@@ -33,12 +34,16 @@ public enum GameState
 }
 
 /// <summary>
-/// Coordinates the lifecycle, dependency resolution, and telemetry of a game
-/// and its registered modules.
+/// Coordinates the lifecycle, dependency resolution, telemetry, and main update
+/// loop of a game and its registered modules.
 /// </summary>
 /// <remarks>
 /// A game manages its modules by resolving their dependencies, injecting their
 /// shared context, and starting and stopping them in dependency order.
+///
+/// Once startup has completed successfully, <see cref="Start"/> enters the main
+/// game loop and repeatedly invokes <see cref="OnUpdate(double)"/> until the game
+/// is stopped.
 /// </remarks>
 public abstract class Game : IDestroyable
 {
@@ -61,6 +66,38 @@ public abstract class Game : IDestroyable
     /// </summary>
     public readonly ReadonlyStore<GameState> State;
 
+    /// <summary>
+    /// Gets or sets the target number of frames the game attempts to process
+    /// per second. A value of <c>0</c> disables frame-rate limiting.
+    /// </summary>
+    public double TargetFramerate
+    {
+        get;
+        set
+        {
+            if (value < 0 || double.IsNaN(value))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    value,
+                    "Target framerate must be zero or greater."
+                );
+            }
+
+            field = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the current measured framerate of the game.
+    /// </summary>
+    public double Framerate { get; private set; }
+
+    /// <summary>
+    /// Gets the amount of time elapsed since the previous frame, in seconds.
+    /// </summary>
+    public double DeltaTime { get; private set; }
+
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
@@ -69,19 +106,30 @@ public abstract class Game : IDestroyable
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
     /// </summary>
-    /// <param name="services">
+    /// <param name="modules">
     /// The initial modules to register.
+    /// </param>
+    /// <param name="targetFramerate">
+    /// The target number of frames the game attempts to process per second.
+    /// A value of <c>0</c> disables frame-rate limiting.
     /// </param>
     /// <param name="telemetry">
     /// The telemetry manager to use, or <see langword="null"/> to create a new
     /// instance.
     /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="targetFramerate"/> is negative or not a number.
+    /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when multiple modules have the same identifier.
     /// </exception>
-    protected Game(IEnumerable<Module> services, Telemetry.Telemetry? telemetry = null)
+    protected Game(
+        IEnumerable<Module> modules,
+        double targetFramerate = 60,
+        Telemetry.Telemetry? telemetry = null
+    )
     {
-        foreach (var module in services)
+        foreach (var module in modules)
         {
             if (!this.modules.TryAdd(module.Identifier, module))
             {
@@ -91,6 +139,7 @@ public abstract class Game : IDestroyable
             }
         }
 
+        TargetFramerate = targetFramerate;
         Telemetry = telemetry ?? new();
         State = state.AsReadonly();
 
@@ -100,8 +149,12 @@ public abstract class Game : IDestroyable
     /// <summary>
     /// Gets a registered module of the specified type.
     /// </summary>
-    /// <typeparam name="TModule">The type of the module to retrieve.</typeparam>
-    /// <returns>The registered module of the specified type.</returns>
+    /// <typeparam name="TModule">
+    /// The type of the module to retrieve.
+    /// </typeparam>
+    /// <returns>
+    /// The registered module of the specified type.
+    /// </returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when no module or more than one module matches the specified type.
     /// </exception>
@@ -120,6 +173,17 @@ public abstract class Game : IDestroyable
     protected virtual void OnStart() { }
 
     /// <summary>
+    /// Called once for each frame while the game is running.
+    /// </summary>
+    /// <param name="deltaTime">
+    /// The amount of time elapsed since the previous frame, in seconds.
+    /// </param>
+    /// <remarks>
+    /// Override this method to implement game-specific per-frame logic.
+    /// </remarks>
+    protected virtual void OnUpdate(double deltaTime) { }
+
+    /// <summary>
     /// Called when the game has successfully stopped all running modules.
     /// </summary>
     /// <remarks>
@@ -136,12 +200,20 @@ public abstract class Game : IDestroyable
     protected virtual void OnDestroy() { }
 
     /// <summary>
-    /// Starts the game and all registered modules in dependency order.
+    /// Starts the game, all registered modules, and the main game loop.
     /// </summary>
     /// <remarks>
     /// Module dependencies are resolved before startup. Each module receives
     /// its dependencies through dependency injection before its startup logic
     /// is executed.
+    ///
+    /// After all modules have started successfully, the game enters its main
+    /// update loop. The loop invokes <see cref="OnUpdate(double)"/> once per
+    /// frame and attempts to maintain <see cref="TargetFramerate"/>.
+    ///
+    /// The method does not return while the game remains running.
+    /// The game loop ends when <see cref="Stop"/> changes the game state back
+    /// to <see cref="GameState.Idle"/>.
     /// </remarks>
     /// <exception cref="DestroyedObjectException">
     /// Thrown when the game has already been destroyed.
@@ -170,7 +242,7 @@ public abstract class Game : IDestroyable
 
         Telemetry.Send("Game is starting", "Game", MessageKind.Information);
 
-        List<Module> startedServices = [];
+        List<Module> startedModules = [];
 
         try
         {
@@ -190,7 +262,7 @@ public abstract class Game : IDestroyable
             foreach (var module in sortedModules)
             {
                 module.Start();
-                startedServices.Add(module);
+                startedModules.Add(module);
             }
 
             OnStart();
@@ -203,7 +275,7 @@ public abstract class Game : IDestroyable
         }
         catch (Exception exception)
         {
-            RollbackStartedServices(startedServices);
+            RollbackStartedModules(startedModules);
 
             state.Set(GameState.Idle);
 
@@ -215,6 +287,48 @@ public abstract class Game : IDestroyable
             );
 
             throw;
+        }
+
+        RunUpdateLoop();
+    }
+
+    /// <summary>
+    /// Runs the main game update loop.
+    /// </summary>
+    /// <remarks>
+    /// The loop measures the elapsed time between frames, invokes
+    /// <see cref="OnUpdate(double)"/>, and waits for the remaining frame time
+    /// required to approach <see cref="TargetFramerate"/>.
+    ///
+    /// The loop ends when the game state is no longer
+    /// <see cref="GameState.Running"/>.
+    /// </remarks>
+    private void RunUpdateLoop()
+    {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
+        double previousFrameTime = stopwatch.Elapsed.TotalSeconds;
+
+        while (state.Get() == GameState.Running)
+        {
+            double frameDuration = TargetFramerate > 0 ? 1.0 / TargetFramerate : 0;
+            double frameStartTime = stopwatch.Elapsed.TotalSeconds;
+
+            DeltaTime = frameStartTime - previousFrameTime;
+            previousFrameTime = frameStartTime;
+
+            Framerate = DeltaTime > 0 ? 1.0 / DeltaTime : TargetFramerate;
+
+            OnUpdate(DeltaTime);
+
+            double elapsedFrameTime = stopwatch.Elapsed.TotalSeconds - frameStartTime;
+
+            double remainingFrameTime = frameDuration - elapsedFrameTime;
+
+            if (remainingFrameTime > 0)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(remainingFrameTime));
+            }
         }
     }
 
@@ -285,14 +399,14 @@ public abstract class Game : IDestroyable
     /// <summary>
     /// Stops the modules that started successfully before a startup failure.
     /// </summary>
-    /// <param name="startedServices">
+    /// <param name="startedModules">
     /// The modules that started successfully before the failure occurred.
     /// </param>
-    private void RollbackStartedServices(IReadOnlyList<Module> startedServices)
+    private void RollbackStartedModules(IReadOnlyList<Module> startedModules)
     {
-        for (int index = startedServices.Count - 1; index >= 0; index--)
+        for (int index = startedModules.Count - 1; index >= 0; index--)
         {
-            Module module = startedServices[index];
+            Module module = startedModules[index];
 
             try
             {
@@ -322,11 +436,11 @@ public abstract class Game : IDestroyable
     /// </exception>
     private IReadOnlyList<Module> ResolveModuleOrder()
     {
-        Dictionary<string, Module> servicesByIdentifier = [];
+        Dictionary<string, Module> modulesByIdentifier = [];
 
         foreach (var module in modules.Values)
         {
-            servicesByIdentifier.Add(module.Identifier, module);
+            modulesByIdentifier.Add(module.Identifier, module);
         }
 
         List<Module> sortedModules = [];
@@ -354,14 +468,14 @@ public abstract class Game : IDestroyable
 
             foreach (var dependency in module.Dependencies)
             {
-                if (!servicesByIdentifier.TryGetValue(dependency, out Module? dependencyService))
+                if (!modulesByIdentifier.TryGetValue(dependency, out Module? dependencyModule))
                 {
                     throw new InvalidOperationException(
                         $"Module '{module.Identifier}' requires missing dependency '{dependency}'"
                     );
                 }
 
-                Resolve(dependencyService, dependencyPath);
+                Resolve(dependencyModule, dependencyPath);
             }
 
             dependencyPath.RemoveAt(dependencyPath.Count - 1);
