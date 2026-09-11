@@ -26,6 +26,7 @@ public abstract class Game : IDestroyable
 
     public readonly ReadonlyStore<GameState> State;
 
+    /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
     private IReadOnlyList<Service>? serviceOrder;
@@ -177,6 +178,7 @@ public abstract class Game : IDestroyable
         }
     }
 
+    /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
         if (Destroyed)

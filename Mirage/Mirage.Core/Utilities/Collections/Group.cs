@@ -99,9 +99,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// </summary>
     public int Count => items.Count;
 
-    /// <summary>
-    /// Gets a value indicating whether the group has been destroyed.
-    /// </summary>
+    /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
     private readonly Signal<TItem> onAdd = new();
@@ -323,6 +321,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
         return new ReadonlyGroup<TItem>(items);
     }
 
+    /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
         if (Destroyed)

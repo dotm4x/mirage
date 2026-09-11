@@ -17,6 +17,7 @@ public sealed class Telemetry : IDestroyable
     /// </summary>
     public readonly Group<IPort> Ports = [];
 
+    /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
     private readonly Signal<Message> onSend = new();
@@ -106,6 +107,7 @@ public sealed class Telemetry : IDestroyable
         return message;
     }
 
+    /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
         if (Destroyed)

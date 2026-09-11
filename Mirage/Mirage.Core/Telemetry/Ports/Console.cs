@@ -12,6 +12,7 @@ public sealed class ConsolePort : IPort
 {
     public PortPriority Priority => PortPriority.Critical;
 
+    /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
     public void Send(Message message)
@@ -45,6 +46,7 @@ public sealed class ConsolePort : IPort
         }
     }
 
+    /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
         if (Destroyed)

@@ -53,6 +53,7 @@ public abstract class Event<TPayload> : IDestroyable
     /// </summary>
     protected HashSet<EventConnection<TPayload>> Connections = [];
 
+    /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
     /// <summary>
@@ -147,6 +148,7 @@ public abstract class Event<TPayload> : IDestroyable
         }
     }
 
+    /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
         if (Destroyed)

@@ -51,6 +51,7 @@ public abstract class Service : IDestroyable
 
     private bool injected;
 
+    /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
     protected Service(string identifier, IEnumerable<string>? dependencies = null)
@@ -225,6 +226,7 @@ public abstract class Service : IDestroyable
         }
     }
 
+    /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
         if (Destroyed)
