@@ -85,6 +85,12 @@ public enum ModuleState
 /// </remarks>
 public abstract class Module : IDestroyable
 {
+    private readonly Store<ModuleState> state = new(ModuleState.Idle);
+    private readonly Dictionary<string, Module> injectedDependencies = [];
+    private bool injected;
+
+    #region Properties
+
     /// <summary>
     /// Gets the unique module identifier.
     /// </summary>
@@ -100,19 +106,17 @@ public abstract class Module : IDestroyable
     /// </summary>
     protected Telemetry.Telemetry Telemetry { get; private set; } = null!;
 
-    private readonly Store<ModuleState> state = new(ModuleState.Idle);
-
     /// <summary>
     /// Gets a read-only store for the current lifecycle state of the module.
     /// </summary>
     public ReadonlyStore<ModuleState> State { get; }
 
-    private readonly Dictionary<string, Module> injectedDependencies = [];
-
-    private bool injected;
-
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
+
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Module"/> class.
@@ -130,6 +134,10 @@ public abstract class Module : IDestroyable
 
         State = state.AsReadonly();
     }
+
+    #endregion
+
+    #region Injection Methods
 
     /// <summary>
     /// Injects the shared game context and resolves the module's dependencies.
@@ -160,6 +168,10 @@ public abstract class Module : IDestroyable
 
         Telemetry.Send($"Module '{Identifier}' has been injected.", Identifier, MessageKind.Debug);
     }
+
+    #endregion
+
+    #region Dependency Methods
 
     /// <summary>
     /// Gets an injected dependency of the specified type.
@@ -196,6 +208,10 @@ public abstract class Module : IDestroyable
         return typedModule;
     }
 
+    #endregion
+
+    #region Lifecycle Hooks
+
     /// <summary>
     /// Called when the module starts.
     /// </summary>
@@ -219,6 +235,10 @@ public abstract class Module : IDestroyable
     /// Override this method to release module-specific resources.
     /// </remarks>
     protected virtual void OnDestroy() { }
+
+    #endregion
+
+    #region Lifecycle Methods
 
     /// <summary>
     /// Starts the module and transitions it to the running state.
@@ -380,4 +400,6 @@ public abstract class Module : IDestroyable
             );
         }
     }
+
+    #endregion
 }

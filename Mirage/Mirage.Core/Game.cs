@@ -48,6 +48,10 @@ public enum GameState
 public abstract class Game : IDestroyable
 {
     private readonly Dictionary<string, Module> modules = [];
+    private readonly Store<GameState> state = new(GameState.Idle);
+    private IReadOnlyList<Module>? moduleOrder;
+
+    #region Properties
 
     /// <summary>
     /// Gets the modules registered in the game, indexed by identifier.
@@ -58,8 +62,6 @@ public abstract class Game : IDestroyable
     /// Gets the telemetry manager used by the game and its modules.
     /// </summary>
     public readonly Telemetry.Telemetry Telemetry;
-
-    private readonly Store<GameState> state = new(GameState.Idle);
 
     /// <summary>
     /// Gets a read-only view of the game's current lifecycle state.
@@ -101,7 +103,9 @@ public abstract class Game : IDestroyable
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
-    private IReadOnlyList<Module>? moduleOrder;
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
@@ -145,6 +149,8 @@ public abstract class Game : IDestroyable
 
         Modules = this.modules;
     }
+
+    #endregion
 
     /// <summary>
     /// Gets a registered module of the specified type.

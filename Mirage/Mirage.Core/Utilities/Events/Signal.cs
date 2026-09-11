@@ -21,6 +21,8 @@ namespace Mirage.Core.Utilities.Events;
 /// </example>
 public class Signal<TPayload> : Event<TPayload>
 {
+    #region Signal Methods
+
     /// <summary>
     /// Dispatches the signal, invoking all connected listener callbacks
     /// with the provided payload.
@@ -38,4 +40,6 @@ public class Signal<TPayload> : Event<TPayload>
 
         Dispatch(payload);
     }
+
+    #endregion
 }

@@ -10,6 +10,15 @@ namespace Mirage.Core.Telemetry.Ports;
 /// </summary>
 public sealed class ConsolePort : IPort
 {
+    private const string AnsiCyan = "\x1b[36m";
+    private const string AnsiGreen = "\x1b[32m";
+    private const string AnsiYellow = "\x1b[33m";
+    private const string AnsiRed = "\x1b[31m";
+    private const string AnsiGray = "\x1b[90m";
+    private const string AnsiReset = "\x1b[0m";
+
+    #region Properties
+
     /// <summary>
     /// Gets the priority assigned to the console port.
     /// </summary>
@@ -17,6 +26,10 @@ public sealed class ConsolePort : IPort
 
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
+
+    #endregion
+
+    #region Message Methods
 
     /// <summary>
     /// Sends a telemetry message to the console.
@@ -56,6 +69,10 @@ public sealed class ConsolePort : IPort
         }
     }
 
+    #endregion
+
+    #region Lifecycle Methods
+
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
@@ -68,6 +85,10 @@ public sealed class ConsolePort : IPort
 
         Destroyed = true;
     }
+
+    #endregion
+
+    #region Private Methods
 
     private static string GetKindName(MessageKind kind)
     {
@@ -93,10 +114,5 @@ public sealed class ConsolePort : IPort
         };
     }
 
-    private const string AnsiCyan = "\x1b[36m";
-    private const string AnsiGreen = "\x1b[32m";
-    private const string AnsiYellow = "\x1b[33m";
-    private const string AnsiRed = "\x1b[31m";
-    private const string AnsiGray = "\x1b[90m";
-    private const string AnsiReset = "\x1b[0m";
+    #endregion
 }

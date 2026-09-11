@@ -12,6 +12,10 @@ namespace Mirage.Core.Telemetry;
 /// </summary>
 public sealed class Telemetry : IDestroyable
 {
+    private readonly Signal<Message> onSend = new();
+
+    #region Properties and Events
+
     /// <summary>
     /// Gets the registered telemetry output ports.
     /// </summary>
@@ -20,12 +24,14 @@ public sealed class Telemetry : IDestroyable
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
-    private readonly Signal<Message> onSend = new();
-
     /// <summary>
     /// Gets the signal fired after a message is dispatched to all output ports.
     /// </summary>
     public readonly ReadonlyEvent<Message> OnSend;
+
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Telemetry"/> class.
@@ -42,6 +48,10 @@ public sealed class Telemetry : IDestroyable
 
         OnSend = onSend.AsReadonly();
     }
+
+    #endregion
+
+    #region Message Methods
 
     /// <summary>
     /// Dispatches a telemetry message using the specified content and optional
@@ -107,6 +117,10 @@ public sealed class Telemetry : IDestroyable
         return message;
     }
 
+    #endregion
+
+    #region Lifecycle Methods
+
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
@@ -127,4 +141,6 @@ public sealed class Telemetry : IDestroyable
 
         Destroyed = true;
     }
+
+    #endregion
 }

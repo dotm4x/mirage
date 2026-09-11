@@ -8,6 +8,8 @@ namespace Mirage.Core.Utilities.Events;
 /// <typeparam name="TValue">The type of the stored value.</typeparam>
 public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> get)
 {
+    #region Properties
+
     /// <summary>
     /// Gets the current value of the store without allowing mutation.
     /// </summary>
@@ -17,6 +19,8 @@ public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> ge
     /// Gets the event interface used to subscribe to changes in the store.
     /// </summary>
     public ReadonlyEvent<TValue> Event { get; } = @event;
+
+    #endregion
 }
 
 /// <summary>
@@ -45,8 +49,10 @@ public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> ge
 /// </param>
 public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = null) : Event<TValue>
 {
-    private TValue value = value;
     private readonly Func<TValue, TValue, bool>? equals = equals;
+    private TValue value = value;
+
+    #region Value Methods
 
     /// <summary>
     /// Gets the current value of the store.
@@ -96,4 +102,6 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
 
         Dispatch(this.value);
     }
+
+    #endregion
 }

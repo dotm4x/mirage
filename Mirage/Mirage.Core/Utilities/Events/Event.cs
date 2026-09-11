@@ -13,6 +13,8 @@ public class EventConnection<TPayload>(
     Action disconnect
 )
 {
+    #region Properties
+
     /// <summary>
     /// Gets the callback function executed when the event is dispatched.
     /// </summary>
@@ -27,6 +29,8 @@ public class EventConnection<TPayload>(
     /// Disconnects the callback from the event.
     /// </summary>
     public Action Disconnect { get; } = disconnect;
+
+    #endregion
 }
 
 /// <summary>
@@ -35,10 +39,14 @@ public class EventConnection<TPayload>(
 /// <typeparam name="TPayload">The type of the value passed to event listeners.</typeparam>
 public class ReadonlyEvent<TPayload>(Action<Action<TPayload>> connect)
 {
+    #region Properties
+
     /// <summary>
     /// Gets the function used to subscribe a callback to the event.
     /// </summary>
     public Action<Action<TPayload>> Connect { get; } = connect;
+
+    #endregion
 }
 
 /// <summary>
@@ -47,13 +55,19 @@ public class ReadonlyEvent<TPayload>(Action<Action<TPayload>> connect)
 /// <typeparam name="TPayload">The type of the value passed to event listeners.</typeparam>
 public abstract class Event<TPayload> : IDestroyable
 {
+    protected HashSet<EventConnection<TPayload>> Connections = [];
+
+    #region Properties
+
     /// <summary>
     /// Gets the active event connections.
     /// </summary>
-    protected HashSet<EventConnection<TPayload>> Connections = [];
-
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
+
+    #endregion
+
+    #region Subscription Methods
 
     /// <summary>
     /// Subscribes a callback function to the event.
@@ -110,6 +124,10 @@ public abstract class Event<TPayload> : IDestroyable
         }
     }
 
+    #endregion
+
+    #region View Methods
+
     /// <summary>
     /// Creates a read-only view of the event.
     /// </summary>
@@ -121,6 +139,10 @@ public abstract class Event<TPayload> : IDestroyable
     {
         return new(callback => Connect(callback));
     }
+
+    #endregion
+
+    #region Dispatch Methods
 
     /// <summary>
     /// Dispatches a payload to all currently connected listeners.
@@ -147,6 +169,10 @@ public abstract class Event<TPayload> : IDestroyable
         }
     }
 
+    #endregion
+
+    #region Lifecycle Methods
+
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
@@ -158,4 +184,6 @@ public abstract class Event<TPayload> : IDestroyable
         Connections.Clear();
         Destroyed = true;
     }
+
+    #endregion
 }

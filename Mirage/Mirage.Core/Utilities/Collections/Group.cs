@@ -11,10 +11,16 @@ namespace Mirage.Core.Utilities.Collections;
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
 public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
 {
+    #region Properties
+
     /// <summary>
     /// Gets the number of items currently contained in the group.
     /// </summary>
     public int Count { get; } = items.Count();
+
+    #endregion
+
+    #region Collection Methods
 
     /// <summary>
     /// Determines whether the specified item is contained in the group.
@@ -76,6 +82,8 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
     {
         return GetEnumerator();
     }
+
+    #endregion
 }
 
 /// <summary>
@@ -85,13 +93,18 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
 public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 {
+    private readonly List<TItem> items = [];
+    private readonly Signal<TItem> onAdd = new();
+    private readonly Signal<TItem> onRemove = new();
+    private readonly Signal<Unit> onClear = new();
+
+    #region Properties and Events
+
     /// <summary>
     /// Gets the maximum number of items allowed in the group. A value of
     /// <c>0</c> indicates unlimited capacity.
     /// </summary>
     public readonly int Limit;
-
-    private readonly List<TItem> items = [];
 
     /// <summary>
     /// Gets the number of items currently contained in the group.
@@ -101,26 +114,24 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
-    private readonly Signal<TItem> onAdd = new();
-
     /// <summary>
     /// Gets the event fired whenever an item is added to the group.
     /// </summary>
     public ReadonlyEvent<TItem> OnAdd { get; }
-
-    private readonly Signal<TItem> onRemove = new();
 
     /// <summary>
     /// Gets the event fired whenever an item is removed from the group.
     /// </summary>
     public ReadonlyEvent<TItem> OnRemove { get; }
 
-    private readonly Signal<Unit> onClear = new();
-
     /// <summary>
     /// Gets the event fired when the group is cleared.
     /// </summary>
     public ReadonlyEvent<Unit> OnClear { get; }
+
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Group{TItem}"/> class.
@@ -155,6 +166,10 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
         OnClear = onClear.AsReadonly();
     }
 
+    #endregion
+
+    #region Private Methods
+
     private void ThrowIfDestroyed()
     {
         if (Destroyed)
@@ -170,6 +185,10 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
             Remove(items[0]);
         }
     }
+
+    #endregion
+
+    #region Collection Methods
 
     /// <summary>
     /// Adds one or more items to the group.
@@ -321,6 +340,10 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
         return new ReadonlyGroup<TItem>(items);
     }
 
+    #endregion
+
+    #region Lifecycle Methods
+
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
@@ -337,4 +360,6 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
         Destroyed = true;
     }
+
+    #endregion
 }
