@@ -178,41 +178,6 @@ public abstract class Game : IDestroyable
         }
     }
 
-    /// <inheritdoc cref="IDestroyable.Destroy"/>
-    public void Destroy()
-    {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Game is already destroyed, cannot destroy again");
-        }
-
-        GameState currentState = state.Get();
-
-        if (currentState != GameState.Idle)
-        {
-            throw new InvalidOperationException(
-                $"Game cannot be destroyed while in state '{currentState}'"
-            );
-        }
-
-        OnDestroy();
-
-        foreach (var module in modules.Values)
-        {
-            module.Destroy();
-        }
-
-        modules.Clear();
-
-        state.Destroy();
-
-        Destroyed = true;
-
-        Telemetry.Send("Game has been destroyed", "Game", MessageKind.Debug);
-
-        Telemetry.Destroy();
-    }
-
     private void RollbackStartedServices(IReadOnlyList<Module> startedServices)
     {
         for (int index = startedServices.Count - 1; index >= 0; index--)
@@ -293,5 +258,40 @@ public abstract class Game : IDestroyable
             }
         }
         return sortedModules;
+    }
+
+    /// <inheritdoc cref="IDestroyable.Destroy"/>
+    public void Destroy()
+    {
+        if (Destroyed)
+        {
+            throw new DestroyedObjectException("Game is already destroyed, cannot destroy again");
+        }
+
+        GameState currentState = state.Get();
+
+        if (currentState != GameState.Idle)
+        {
+            throw new InvalidOperationException(
+                $"Game cannot be destroyed while in state '{currentState}'"
+            );
+        }
+
+        OnDestroy();
+
+        foreach (var module in modules.Values)
+        {
+            module.Destroy();
+        }
+
+        modules.Clear();
+
+        state.Destroy();
+
+        Destroyed = true;
+
+        Telemetry.Send("Game has been destroyed", "Game", MessageKind.Debug);
+
+        Telemetry.Destroy();
     }
 }
