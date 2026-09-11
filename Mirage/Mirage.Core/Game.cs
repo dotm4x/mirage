@@ -6,24 +6,59 @@ using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core;
 
+/// <summary>
+/// Represents the current lifecycle state of a game.
+/// </summary>
 public enum GameState
 {
+    /// <summary>
+    /// Indicates that the game is idle and not currently running.
+    /// </summary>
     Idle,
+
+    /// <summary>
+    /// Indicates that the game is currently starting.
+    /// </summary>
     Starting,
+
+    /// <summary>
+    /// Indicates that the game is running.
+    /// </summary>
     Running,
+
+    /// <summary>
+    /// Indicates that the game is currently stopping.
+    /// </summary>
     Stopping,
 }
 
+/// <summary>
+/// Coordinates the lifecycle, dependency resolution, and telemetry of a game
+/// and its registered modules.
+/// </summary>
+/// <remarks>
+/// A game manages its modules by resolving their dependencies, injecting their
+/// shared context, and starting and stopping them in dependency order.
+/// </remarks>
 public abstract class Game : IDestroyable
 {
     private readonly Dictionary<string, Module> modules = [];
 
+    /// <summary>
+    /// Gets the modules registered in the game, indexed by their identifiers.
+    /// </summary>
     public IReadOnlyDictionary<string, Module> Modules { get; }
 
+    /// <summary>
+    /// Gets the telemetry manager used by the game and its modules.
+    /// </summary>
     public readonly Telemetry.Telemetry Telemetry;
 
     private readonly Store<GameState> state = new(GameState.Idle);
 
+    /// <summary>
+    /// Gets a read-only view of the game's current lifecycle state.
+    /// </summary>
     public readonly ReadonlyStore<GameState> State;
 
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
@@ -31,6 +66,19 @@ public abstract class Game : IDestroyable
 
     private IReadOnlyList<Module>? moduleOrder;
 
+    /// <summary>
+    /// Creates a new instance of a <see cref="Game"/>.
+    /// </summary>
+    /// <param name="services">
+    /// The initial modules to register in the game.
+    /// </param>
+    /// <param name="telemetry">
+    /// The telemetry manager to use. If <see langword="null"/>, a new instance
+    /// is created.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when multiple modules have the same identifier.
+    /// </exception>
     protected Game(IEnumerable<Module> services, Telemetry.Telemetry? telemetry = null)
     {
         foreach (var module in services)
@@ -49,12 +97,45 @@ public abstract class Game : IDestroyable
         Modules = this.modules;
     }
 
+    /// <summary>
+    /// Called when the game has successfully started all modules.
+    /// </summary>
+    /// <remarks>
+    /// Override this method to perform game-specific startup logic.
+    /// </remarks>
     protected virtual void OnStart() { }
 
+    /// <summary>
+    /// Called when the game has successfully stopped all running modules.
+    /// </summary>
+    /// <remarks>
+    /// Override this method to perform game-specific shutdown logic.
+    /// </remarks>
     protected virtual void OnStop() { }
 
+    /// <summary>
+    /// Called when the game is destroyed.
+    /// </summary>
+    /// <remarks>
+    /// Override this method to release game-specific resources.
+    /// </remarks>
     protected virtual void OnDestroy() { }
 
+    /// <summary>
+    /// Starts the game and all registered modules in dependency order.
+    /// </summary>
+    /// <remarks>
+    /// Module dependencies are resolved before startup. Each module receives
+    /// its dependencies through dependency injection before its startup logic
+    /// is executed.
+    /// </remarks>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the game has already been destroyed.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the game is not idle, a module dependency is missing, or
+    /// module dependencies contain a circular reference.
+    /// </exception>
     public void Start()
     {
         if (Destroyed)
@@ -123,6 +204,15 @@ public abstract class Game : IDestroyable
         }
     }
 
+    /// <summary>
+    /// Stops the game and all running modules in reverse dependency order.
+    /// </summary>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the game has already been destroyed.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the game is not running.
+    /// </exception>
     public void Stop()
     {
         if (Destroyed)
@@ -178,6 +268,12 @@ public abstract class Game : IDestroyable
         }
     }
 
+    /// <summary>
+    /// Stops modules that were successfully started before a game startup failure.
+    /// </summary>
+    /// <param name="startedServices">
+    /// The modules that successfully started before the failure occurred.
+    /// </param>
     private void RollbackStartedServices(IReadOnlyList<Module> startedServices)
     {
         for (int index = startedServices.Count - 1; index >= 0; index--)
@@ -200,6 +296,16 @@ public abstract class Game : IDestroyable
         }
     }
 
+    /// <summary>
+    /// Resolves the module startup order using their declared dependencies.
+    /// </summary>
+    /// <returns>
+    /// The modules ordered so that each module appears after its dependencies.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when a required dependency is missing or a circular dependency
+    /// is detected.
+    /// </exception>
     private IReadOnlyList<Module> ResolveModuleOrder()
     {
         Dictionary<string, Module> servicesByIdentifier = [];
@@ -250,6 +356,7 @@ public abstract class Game : IDestroyable
             visited.Add(module.Identifier);
             sortedModules.Add(module);
         }
+
         foreach (var module in modules.Values)
         {
             if (!visited.Contains(module.Identifier))
@@ -257,6 +364,7 @@ public abstract class Game : IDestroyable
                 Resolve(module, []);
             }
         }
+
         return sortedModules;
     }
 
