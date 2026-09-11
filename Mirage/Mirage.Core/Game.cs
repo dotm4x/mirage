@@ -1,6 +1,6 @@
 using Mirage.Core.Exceptions;
 using Mirage.Core.Interfaces;
-using Mirage.Core.Services;
+using Mirage.Core.Modules;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Utilities.Events;
 

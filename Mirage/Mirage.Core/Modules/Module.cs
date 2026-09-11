@@ -3,7 +3,7 @@ using Mirage.Core.Interfaces;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Utilities.Events;
 
-namespace Mirage.Core.Services;
+namespace Mirage.Core.Modules;
 
 internal sealed class ModuleContainer(IEnumerable<Module> modules)
 {
