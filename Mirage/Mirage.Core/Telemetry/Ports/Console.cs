@@ -29,7 +29,8 @@ public sealed class ConsolePort : IPort
             $"{AnsiGray}[{timestamp}]{AnsiReset} "
             + $"{color}[{GetKindName(message.Kind)}]{AnsiReset}";
 
-        string sourceTag = $"{AnsiGray}[{message.Source}]{AnsiReset}";
+        string source = string.IsNullOrWhiteSpace(message.Source) ? "Unknown" : message.Source;
+        string sourceTag = $"{AnsiGray}[{source}]{AnsiReset}";
 
         string output = $"{prefix} {sourceTag} {message.Content}";
 
