@@ -42,10 +42,15 @@ public abstract class Service : IDestroyable
     public readonly IReadOnlyList<string> Dependencies;
 
     protected Telemetry.Telemetry Telemetry { get; private set; } = null!;
+
     private readonly Store<ServiceState> state = new(ServiceState.Idle);
+
     public ReadonlyStore<ServiceState> State { get; }
+
     private readonly Dictionary<string, Service> injectedDependencies = [];
+
     private bool injected;
+
     public bool Destroyed { get; private set; }
 
     protected Service(string identifier, IEnumerable<string>? dependencies = null)
@@ -110,10 +115,17 @@ public abstract class Service : IDestroyable
 
     internal void Start()
     {
+        if (Destroyed)
+        {
+            throw new DestroyedObjectException(
+                $"Service '{Identifier}' is destroyed, cannot start."
+            );
+        }
+
         if (!injected)
         {
             throw new InvalidOperationException(
-                $"Service '{Identifier}' has not been injected, cannot stop."
+                $"Service '{Identifier}' has not been injected, cannot start."
             );
         }
 
@@ -159,10 +171,17 @@ public abstract class Service : IDestroyable
 
     internal void Stop()
     {
+        if (Destroyed)
+        {
+            throw new DestroyedObjectException(
+                $"Service '{Identifier}' is destroyed, cannot stop."
+            );
+        }
+
         if (!injected)
         {
             throw new InvalidOperationException(
-                $"Service '{Identifier}' has not been injected, cannot stop"
+                $"Service '{Identifier}' has not been injected, cannot stop."
             );
         }
 
@@ -193,7 +212,7 @@ public abstract class Service : IDestroyable
         }
         catch (Exception exception)
         {
-            state.Set(ServiceState.Idle);
+            state.Set(ServiceState.Running);
 
             Telemetry.Send(
                 $"Service '{Identifier}' failed to stop.",
