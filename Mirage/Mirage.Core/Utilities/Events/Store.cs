@@ -3,8 +3,7 @@ using Mirage.Core.Exceptions;
 namespace Mirage.Core.Utilities.Events;
 
 /// <summary>
-/// Exposes a restricted interface for a <see cref="Store{TValue}"/>, including
-/// read access through <see cref="Get"/>.
+/// Provides read-only access to a <see cref="Store{TValue}"/>.
 /// </summary>
 /// <typeparam name="TValue">The type of the stored value.</typeparam>
 public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> get)
@@ -58,8 +57,8 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
     }
 
     /// <summary>
-    /// Exposes a restricted view of the store, including read-only access
-    /// to its current value.
+    /// Creates a read-only view of the store, including access to its current
+    /// value.
     /// </summary>
     /// <returns>A <see cref="ReadonlyStore{TValue}"/> view of this store.</returns>
     public new ReadonlyStore<TValue> AsReadonly()

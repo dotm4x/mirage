@@ -13,7 +13,7 @@ namespace Mirage.Core.Telemetry;
 public sealed class Telemetry : IDestroyable
 {
     /// <summary>
-    /// Gets the collection of registered telemetry output ports.
+    /// Gets the registered telemetry output ports.
     /// </summary>
     public readonly Group<IPort> Ports = [];
 
@@ -23,7 +23,7 @@ public sealed class Telemetry : IDestroyable
     private readonly Signal<Message> onSend = new();
 
     /// <summary>
-    /// Signal fired when a message has been dispatched to all output ports.
+    /// Gets the signal fired after a message is dispatched to all output ports.
     /// </summary>
     public readonly ReadonlyEvent<Message> OnSend;
 

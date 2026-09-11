@@ -30,21 +30,17 @@ public enum MessageKind
 /// Defines an immutable telemetry message containing the log content,
 /// origin source, severity classification, and optional metadata.
 /// </summary>
+/// <param name="Content">The primary text content or payload of the message.</param>
+/// <param name="Source">
+/// The origin component, service, or module that generated the message.
+/// </param>
+/// <param name="Kind">The severity kind or classification of the message.</param>
+/// <param name="Metadata">
+/// Optional contextual key-value metadata associated with the message.
+/// </param>
 public readonly record struct Message(
-    /// <summary>
-    /// The primary text content or payload of the message.
-    /// </summary>
     string Content,
-    /// <summary>
-    /// The origin component, service, or module that generated the message.
-    /// </summary>
     string Source,
-    /// <summary>
-    /// The severity kind or classification of the message.
-    /// </summary>
     MessageKind Kind,
-    /// <summary>
-    /// Optional contextual key-value metadata associated with the message.
-    /// </summary>
     IReadOnlyDictionary<string, object?>? Metadata = null
 );

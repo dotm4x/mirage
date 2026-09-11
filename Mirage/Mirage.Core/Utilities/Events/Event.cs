@@ -30,8 +30,7 @@ public class EventConnection<TPayload>(
 }
 
 /// <summary>
-/// Exposes a restricted interface for subscribing to events without allowing
-/// dispatching or clearing.
+/// Provides read-only access for subscribing to events.
 /// </summary>
 /// <typeparam name="TPayload">The type of the value passed to event listeners.</typeparam>
 public class ReadonlyEvent<TPayload>(Action<Action<TPayload>> connect)
@@ -49,7 +48,7 @@ public class ReadonlyEvent<TPayload>(Action<Action<TPayload>> connect)
 public abstract class Event<TPayload> : IDestroyable
 {
     /// <summary>
-    /// Internal set of active event connections.
+    /// Gets the active event connections.
     /// </summary>
     protected HashSet<EventConnection<TPayload>> Connections = [];
 
@@ -112,7 +111,7 @@ public abstract class Event<TPayload> : IDestroyable
     }
 
     /// <summary>
-    /// Exposes a restricted interface of the event.
+    /// Creates a read-only view of the event.
     /// </summary>
     /// <returns>
     /// A <see cref="ReadonlyEvent{TPayload}"/> that allows subscribing to the event

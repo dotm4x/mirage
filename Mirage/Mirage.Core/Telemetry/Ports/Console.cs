@@ -10,11 +10,21 @@ namespace Mirage.Core.Telemetry.Ports;
 /// </summary>
 public sealed class ConsolePort : IPort
 {
+    /// <summary>
+    /// Gets the priority assigned to the console port.
+    /// </summary>
     public PortPriority Priority => PortPriority.Critical;
 
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
+    /// <summary>
+    /// Sends a telemetry message to the console.
+    /// </summary>
+    /// <param name="message">The telemetry message to write.</param>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the console port has already been destroyed.
+    /// </exception>
     public void Send(Message message)
     {
         if (Destroyed)

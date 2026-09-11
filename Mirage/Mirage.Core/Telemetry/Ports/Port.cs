@@ -41,8 +41,8 @@ public enum PortPriority
 public interface IPort : IDestroyable
 {
     /// <summary>
-    /// Gets the priority assigned to the telemetry port.
-    /// The priority determines the execution order among registered ports.
+    /// Gets the priority assigned to the telemetry port, which determines the
+    /// execution order among registered ports.
     /// </summary>
     PortPriority Priority { get; }
 

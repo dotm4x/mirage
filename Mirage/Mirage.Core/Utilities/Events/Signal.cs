@@ -6,12 +6,10 @@ namespace Mirage.Core.Utilities.Events;
 /// Represents a dispatcher for specific events, allowing listeners to be notified
 /// when the signal fires.
 /// </summary>
-/// <typeparam name="TPayload">
-/// The type of the value passed to the signal listeners.
-/// </typeparam>
+/// <typeparam name="TPayload">The type of the value passed to signal listeners.</typeparam>
 /// <example>
 /// <code>
-/// var onClick = new Signal<ClickData>();
+/// var onClick = new Signal&lt;ClickData&gt;();
 ///
 /// onClick.Connect(data =>
 /// {

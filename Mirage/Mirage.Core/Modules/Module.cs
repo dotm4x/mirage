@@ -86,7 +86,7 @@ public enum ModuleState
 public abstract class Module : IDestroyable
 {
     /// <summary>
-    /// Gets the unique identifier of the module.
+    /// Gets the unique module identifier.
     /// </summary>
     public readonly string Identifier;
 
@@ -103,7 +103,7 @@ public abstract class Module : IDestroyable
     private readonly Store<ModuleState> state = new(ModuleState.Idle);
 
     /// <summary>
-    /// Gets a read-only store representing the current lifecycle state of the module.
+    /// Gets a read-only store for the current lifecycle state of the module.
     /// </summary>
     public ReadonlyStore<ModuleState> State { get; }
 
@@ -118,10 +118,10 @@ public abstract class Module : IDestroyable
     /// Creates an instance of an <see cref="Module"/>.
     /// </summary>
     /// <param name="identifier">
-    /// The unique identifier used to identify the module.
+    /// The unique identifier of the module.
     /// </param>
     /// <param name="dependencies">
-    /// The identifiers of modules required by this module.
+    /// The identifiers of the modules required by this module.
     /// </param>
     protected Module(string identifier, IEnumerable<string>? dependencies = null)
     {

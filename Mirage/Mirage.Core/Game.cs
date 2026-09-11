@@ -45,7 +45,7 @@ public abstract class Game : IDestroyable
     private readonly Dictionary<string, Module> modules = [];
 
     /// <summary>
-    /// Gets the modules registered in the game, indexed by their identifiers.
+    /// Gets the modules registered in the game, indexed by identifier.
     /// </summary>
     public IReadOnlyDictionary<string, Module> Modules { get; }
 
@@ -70,11 +70,11 @@ public abstract class Game : IDestroyable
     /// Creates a new instance of a <see cref="Game"/>.
     /// </summary>
     /// <param name="services">
-    /// The initial modules to register in the game.
+    /// The initial modules to register.
     /// </param>
     /// <param name="telemetry">
-    /// The telemetry manager to use. If <see langword="null"/>, a new instance
-    /// is created.
+    /// The telemetry manager to use, or <see langword="null"/> to create a new
+    /// instance.
     /// </param>
     /// <exception cref="InvalidOperationException">
     /// Thrown when multiple modules have the same identifier.
@@ -283,10 +283,10 @@ public abstract class Game : IDestroyable
     }
 
     /// <summary>
-    /// Stops modules that were successfully started before a game startup failure.
+    /// Stops the modules that started successfully before a startup failure.
     /// </summary>
     /// <param name="startedServices">
-    /// The modules that successfully started before the failure occurred.
+    /// The modules that started successfully before the failure occurred.
     /// </param>
     private void RollbackStartedServices(IReadOnlyList<Module> startedServices)
     {

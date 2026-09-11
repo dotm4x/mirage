@@ -6,8 +6,7 @@ using Mirage.Core.Utilities.Events;
 namespace Mirage.Core.Utilities.Collections;
 
 /// <summary>
-/// Exposes a restricted interface for reading the items in a group without
-/// allowing modification or destruction.
+/// Provides read-only access to the items in a group.
 /// </summary>
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
 public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
@@ -87,8 +86,8 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
 public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 {
     /// <summary>
-    /// The maximum number of items allowed in the group.
-    /// A value of <c>0</c> means the group has no limit.
+    /// Gets the maximum number of items allowed in the group. A value of
+    /// <c>0</c> indicates unlimited capacity.
     /// </summary>
     public readonly int Limit;
 
@@ -105,21 +104,21 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     private readonly Signal<TItem> onAdd = new();
 
     /// <summary>
-    /// Event fired whenever an item is added to the group.
+    /// Gets the event fired whenever an item is added to the group.
     /// </summary>
     public ReadonlyEvent<TItem> OnAdd { get; }
 
     private readonly Signal<TItem> onRemove = new();
 
     /// <summary>
-    /// Event fired whenever an item is removed from the group.
+    /// Gets the event fired whenever an item is removed from the group.
     /// </summary>
     public ReadonlyEvent<TItem> OnRemove { get; }
 
     private readonly Signal<Unit> onClear = new();
 
     /// <summary>
-    /// Event fired when the group is cleared.
+    /// Gets the event fired when the group is cleared.
     /// </summary>
     public ReadonlyEvent<Unit> OnClear { get; }
 
@@ -127,7 +126,8 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// Creates a new instance of a <see cref="Group{TItem}"/>.
     /// </summary>
     /// <param name="items">
-    /// The initial items to add to the group, or <see langword="null"/> to start empty.
+    /// The initial items to add to the group, or <see langword="null"/> to
+    /// start empty.
     /// </param>
     /// <param name="limit">
     /// The maximum number of items allowed in the group.
@@ -309,8 +309,8 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     }
 
     /// <summary>
-    /// Exposes a restricted interface of the group without allowing modification
-    /// or destruction.
+    /// Creates a read-only view of the group without access to its mutating
+    /// operations.
     /// </summary>
     /// <returns>
     /// A <see cref="ReadonlyGroup{TItem}"/> that allows reading the group's items
