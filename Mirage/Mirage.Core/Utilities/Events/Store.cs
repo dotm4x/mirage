@@ -1,5 +1,4 @@
 using Mirage.Core.Exceptions;
-using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core.Utilities.Events;
 
@@ -85,7 +84,9 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
         if (equals is not null)
         {
             if (equals(this.value, value))
+            {
                 return;
+            }
         }
         else if (EqualityComparer<TValue>.Default.Equals(this.value, value))
         {
@@ -94,18 +95,6 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
 
         this.value = value;
 
-        foreach (var connection in Connections)
-        {
-            try
-            {
-                connection.Callback(this.value);
-            }
-            catch (Exception exception)
-            {
-                Console.Error.WriteLine($"Error in store listener: {exception}");
-
-                throw;
-            }
-        }
+        Dispatch(this.value);
     }
 }

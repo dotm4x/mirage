@@ -1,15 +1,17 @@
 using Mirage.Core.Exceptions;
-using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core.Utilities.Events;
 
 /// <summary>
-/// Represents a dispatcher for specific events, allowing listeners to be notified when the signal fires.
+/// Represents a dispatcher for specific events, allowing listeners to be notified
+/// when the signal fires.
 /// </summary>
-/// <typeparam name="TPayload">The type of the value passed to the signal listeners.</typeparam>
+/// <typeparam name="TPayload">
+/// The type of the value passed to the signal listeners.
+/// </typeparam>
 /// <example>
 /// <code>
-/// var onClick = new Signal();
+/// var onClick = new Signal<ClickData>();
 ///
 /// onClick.Connect(data =>
 /// {
@@ -22,7 +24,8 @@ namespace Mirage.Core.Utilities.Events;
 public class Signal<TPayload> : Event<TPayload>
 {
     /// <summary>
-    /// Dispatches the signal, invoking all connected listener callbacks with the provided payload.
+    /// Dispatches the signal, invoking all connected listener callbacks
+    /// with the provided payload.
     /// </summary>
     /// <param name="payload">The value passed to each event listener.</param>
     /// <exception cref="DestroyedObjectException">
@@ -35,17 +38,6 @@ public class Signal<TPayload> : Event<TPayload>
             throw new DestroyedObjectException("Signal is destroyed, cannot fire");
         }
 
-        foreach (var connection in Connections)
-        {
-            try
-            {
-                connection.Callback(payload);
-            }
-            catch (Exception exception)
-            {
-                Console.Error.WriteLine($"Error in signal listener: {exception}");
-                throw;
-            }
-        }
+        Dispatch(payload);
     }
 }

@@ -53,9 +53,6 @@ public abstract class Event<TPayload> : IDestroyable
     /// </summary>
     protected HashSet<EventConnection<TPayload>> Connections = [];
 
-    /// <summary>
-    /// Gets a value indicating whether the event has been destroyed.
-    /// </summary>
     public bool Destroyed { get; private set; }
 
     /// <summary>
@@ -126,11 +123,30 @@ public abstract class Event<TPayload> : IDestroyable
     }
 
     /// <summary>
-    /// Destroys the event and removes all active connections.
+    /// Dispatches a payload to all currently connected listeners.
     /// </summary>
-    /// <exception cref="DestroyedObjectException">
-    /// Thrown when the event has already been destroyed.
-    /// </exception>
+    /// <param name="payload">The value passed to each event listener.</param>
+    /// <remarks>
+    /// A snapshot of the current connections is used so listeners can safely
+    /// connect, disconnect, or clear connections while the event is being dispatched.
+    /// </remarks>
+    protected void Dispatch(TPayload payload)
+    {
+        foreach (var connection in Connections.ToArray())
+        {
+            try
+            {
+                connection.Callback(payload);
+            }
+            catch (Exception exception)
+            {
+                Console.Error.WriteLine($"Error in event listener: {exception}");
+
+                throw;
+            }
+        }
+    }
+
     public void Destroy()
     {
         if (Destroyed)
