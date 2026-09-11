@@ -1,5 +1,6 @@
 namespace Mirage.Tests.Core.Utilities.Events;
 
+using Mirage.Core.Exceptions;
 using Mirage.Core.Utilities.Events;
 using Xunit;
 
@@ -144,7 +145,7 @@ public class StoreTest
         var store = new Store<int>(42);
         store.Destroy();
 
-        Assert.Throws<InvalidOperationException>(Action);
+        Assert.Throws<DestroyedObjectException>(Action);
         return;
 
         void Action() => store.Set(10);
@@ -258,7 +259,7 @@ public class StoreTest
 
         store.Destroy();
 
-        Assert.Throws<InvalidOperationException>(Action);
+        Assert.Throws<DestroyedObjectException>(Action);
         return;
 
         void Action() => readonlyStore.Event.Connect(_ => { });
@@ -284,7 +285,7 @@ public class StoreTest
 
         store.Destroy();
 
-        Assert.Throws<InvalidOperationException>(() => store.Set(100));
+        Assert.Throws<DestroyedObjectException>(() => store.Set(100));
         Assert.Equal(0, calls);
     }
 
@@ -296,6 +297,6 @@ public class StoreTest
 
         var action = store.Destroy;
 
-        Assert.Throws<InvalidOperationException>(action);
+        Assert.Throws<DestroyedObjectException>(action);
     }
 }

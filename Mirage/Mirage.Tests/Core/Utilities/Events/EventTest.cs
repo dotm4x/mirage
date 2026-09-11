@@ -1,5 +1,6 @@
 namespace Mirage.Tests.Core.Utilities.Events;
 
+using Mirage.Core.Exceptions;
 using Mirage.Core.Utilities.Events;
 using Xunit;
 
@@ -45,7 +46,7 @@ public class EventTest
         var @event = new TestEvent();
         @event.Destroy();
 
-        Assert.Throws<InvalidOperationException>((Func<EventConnection<int>>)Action);
+        Assert.Throws<DestroyedObjectException>((Func<EventConnection<int>>)Action);
         return;
 
         EventConnection<int> Action() => @event.Connect(_ => { });
@@ -113,7 +114,7 @@ public class EventTest
         var @event = new TestEvent();
         @event.Destroy();
 
-        Assert.Throws<InvalidOperationException>(Action);
+        Assert.Throws<DestroyedObjectException>(Action);
         return;
 
         void Action() => @event.Clear();
@@ -125,7 +126,7 @@ public class EventTest
         var @event = new TestEvent();
         @event.Destroy();
 
-        Assert.Throws<InvalidOperationException>(Action);
+        Assert.Throws<DestroyedObjectException>(Action);
         return;
 
         void Action() => @event.Clear(force: true);
@@ -153,7 +154,7 @@ public class EventTest
 
         @event.Destroy();
 
-        Assert.Throws<InvalidOperationException>(Action);
+        Assert.Throws<DestroyedObjectException>(Action);
         return;
 
         void Action() => readonlyEvent.Connect(_ => { });
@@ -193,7 +194,7 @@ public class EventTest
 
         var action = @event.Destroy;
 
-        Assert.Throws<InvalidOperationException>(action);
+        Assert.Throws<DestroyedObjectException>(action);
     }
 
     private sealed class TestEvent : Event<int>

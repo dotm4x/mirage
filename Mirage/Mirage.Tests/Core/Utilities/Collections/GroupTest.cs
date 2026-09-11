@@ -1,5 +1,6 @@
 namespace Mirage.Tests.Core.Utilities.Collections;
 
+using Mirage.Core.Exceptions;
 using Mirage.Core.Utilities.Collections;
 using Xunit;
 
@@ -313,7 +314,7 @@ public class GroupTest
 
         var action = group.Destroy;
 
-        Assert.Throws<InvalidOperationException>(action);
+        Assert.Throws<DestroyedObjectException>(action);
     }
 
     [Fact]
@@ -322,7 +323,7 @@ public class GroupTest
         var group = new Group<int>();
         group.Destroy();
 
-        Assert.Throws<InvalidOperationException>((Func<int[]>)Action);
+        Assert.Throws<DestroyedObjectException>((Func<int[]>)Action);
         return;
 
         int[] Action() => group.Add(1);
@@ -334,7 +335,7 @@ public class GroupTest
         var group = new Group<int> { 1 };
         group.Destroy();
 
-        Assert.Throws<InvalidOperationException>(Action);
+        Assert.Throws<DestroyedObjectException>(Action);
         return;
 
         void Action() => group.Remove(1);
@@ -348,6 +349,6 @@ public class GroupTest
 
         var action = group.Clear;
 
-        Assert.Throws<InvalidOperationException>(action);
+        Assert.Throws<DestroyedObjectException>(action);
     }
 }

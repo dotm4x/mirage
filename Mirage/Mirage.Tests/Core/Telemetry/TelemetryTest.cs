@@ -1,5 +1,6 @@
 namespace Mirage.Tests.Core.Telemetry;
 
+using Mirage.Core.Exceptions;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Telemetry.Ports;
 using Xunit;
@@ -105,7 +106,7 @@ public class TelemetryTest
         var telemetry = new Telemetry();
         telemetry.Destroy();
 
-        Assert.Throws<InvalidOperationException>(Action);
+        Assert.Throws<DestroyedObjectException>(Action);
         return;
 
         void Action() => telemetry.Send(new Message());
@@ -144,7 +145,7 @@ public class TelemetryTest
 
         var action = telemetry.Destroy;
 
-        Assert.Throws<InvalidOperationException>(action);
+        Assert.Throws<DestroyedObjectException>(action);
     }
 
     private sealed class TestPort(

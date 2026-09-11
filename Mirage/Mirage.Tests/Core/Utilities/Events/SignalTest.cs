@@ -1,5 +1,6 @@
 namespace Mirage.Tests.Core.Utilities.Events;
 
+using Mirage.Core.Exceptions;
 using Mirage.Core.Utilities.Events;
 using Xunit;
 
@@ -53,7 +54,7 @@ public class SignalTest
         var signal = new Signal<int>();
         signal.Destroy();
 
-        Assert.Throws<InvalidOperationException>(Action);
+        Assert.Throws<DestroyedObjectException>(Action);
         return;
 
         void Action() => signal.Fire(42);
@@ -123,7 +124,7 @@ public class SignalTest
         signal.Destroy();
         Assert.True(signal.Destroyed);
 
-        Assert.Throws<InvalidOperationException>(() => signal.Fire(42));
+        Assert.Throws<DestroyedObjectException>(() => signal.Fire(42));
         Assert.Equal(0, calls);
     }
 }
