@@ -2,7 +2,6 @@ using Mirage.Core.Exceptions;
 using Mirage.Core.Interfaces;
 using Mirage.Core.Services;
 using Mirage.Core.Telemetry;
-using Mirage.Core.Utilities.Collections;
 using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core;
@@ -19,11 +18,12 @@ public abstract class Game : IDestroyable
 {
     private readonly Dictionary<string, Service> services = [];
 
-    public IReadOnlyDictionary<string, Service> Services;
+    public IReadOnlyDictionary<string, Service> Services { get; }
 
     public readonly Telemetry.Telemetry Telemetry;
 
     private readonly Store<GameState> state = new(GameState.Idle);
+
     public readonly ReadonlyStore<GameState> State;
 
     public bool Destroyed { get; private set; }
@@ -34,7 +34,12 @@ public abstract class Game : IDestroyable
     {
         foreach (var service in services)
         {
-            this.services[service.Identifier] = service;
+            if (!this.services.TryAdd(service.Identifier, service))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate service identifier found: '{service.Identifier}'"
+                );
+            }
         }
 
         Telemetry = telemetry ?? new();
@@ -69,6 +74,8 @@ public abstract class Game : IDestroyable
 
         Telemetry.Send("Game is starting", "Game", MessageKind.Information);
 
+        List<Service> startedServices = [];
+
         try
         {
             IReadOnlyList<Service> sortedServices = ResolveServiceOrder();
@@ -87,17 +94,21 @@ public abstract class Game : IDestroyable
             foreach (var service in sortedServices)
             {
                 service.Start();
+                startedServices.Add(service);
             }
 
             OnStart();
 
             serviceOrder = sortedServices;
+
             state.Set(GameState.Running);
 
             Telemetry.Send("Game is now running", "Game", MessageKind.Information);
         }
         catch (Exception exception)
         {
+            RollbackStartedServices(startedServices);
+
             state.Set(GameState.Idle);
 
             Telemetry.Send(
@@ -131,10 +142,10 @@ public abstract class Game : IDestroyable
 
         Telemetry.Send("Game is stopping", "Game", MessageKind.Information);
 
-        IReadOnlyList<Service> sortedServices = serviceOrder ?? ResolveServiceOrder();
-
         try
         {
+            IReadOnlyList<Service> sortedServices = serviceOrder ?? ResolveServiceOrder();
+
             for (int index = sortedServices.Count - 1; index >= 0; index--)
             {
                 Service service = sortedServices[index];
@@ -153,7 +164,7 @@ public abstract class Game : IDestroyable
         }
         catch (Exception exception)
         {
-            state.Set(GameState.Idle);
+            state.Set(GameState.Running);
 
             Telemetry.Send(
                 "Game failed to stop",
@@ -190,6 +201,7 @@ public abstract class Game : IDestroyable
         }
 
         services.Clear();
+
         state.Destroy();
 
         Destroyed = true;
@@ -199,19 +211,34 @@ public abstract class Game : IDestroyable
         Telemetry.Destroy();
     }
 
+    private void RollbackStartedServices(IReadOnlyList<Service> startedServices)
+    {
+        for (int index = startedServices.Count - 1; index >= 0; index--)
+        {
+            Service service = startedServices[index];
+
+            try
+            {
+                service.Stop();
+            }
+            catch (Exception exception)
+            {
+                Telemetry.Send(
+                    $"Failed to rollback service '{service.Identifier}' after game startup failure.",
+                    service.Identifier,
+                    MessageKind.Error,
+                    new Dictionary<string, object?> { ["Exception"] = exception }
+                );
+            }
+        }
+    }
+
     private IReadOnlyList<Service> ResolveServiceOrder()
     {
         Dictionary<string, Service> servicesByIdentifier = [];
 
         foreach (var service in services.Values)
         {
-            if (servicesByIdentifier.ContainsKey(service.Identifier))
-            {
-                throw new InvalidOperationException(
-                    $"Duplicate service identifier found: '{service.Identifier}'"
-                );
-            }
-
             servicesByIdentifier.Add(service.Identifier, service);
         }
 
