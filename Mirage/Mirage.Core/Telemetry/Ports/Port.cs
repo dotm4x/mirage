@@ -1,3 +1,4 @@
+using Mirage.Core.Exceptions;
 using Mirage.Core.Interfaces;
 
 namespace Mirage.Core.Telemetry.Ports;
@@ -51,7 +52,7 @@ public interface IPort : IDestroyable
     /// <param name="message">
     /// The telemetry message to be sent or recorded.
     /// </param>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when the port has already been destroyed.
     /// </exception>
     void Send(Message message);

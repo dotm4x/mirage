@@ -1,3 +1,5 @@
+using Mirage.Core.Exceptions;
+
 namespace Mirage.Core.Interfaces;
 
 /// <summary>
@@ -13,8 +15,8 @@ public interface IDestroyable
     /// <summary>
     ///   Destroys the object.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when the object has already been destroyed.
-    /// </exception>>
+    /// </exception>
     void Destroy();
 }

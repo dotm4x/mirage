@@ -1,3 +1,4 @@
+using Mirage.Core.Exceptions;
 using Mirage.Core.Interfaces;
 using Mirage.Core.Telemetry.Ports;
 using Mirage.Core.Utilities.Collections;
@@ -59,7 +60,7 @@ public class Telemetry : IDestroyable
     /// <returns>
     /// The dispatched message.
     /// </returns>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when telemetry has already been destroyed.
     /// </exception>
     public Message Send(
@@ -82,14 +83,14 @@ public class Telemetry : IDestroyable
     /// <returns>
     /// The dispatched message.
     /// </returns>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when telemetry has already been destroyed.
     /// </exception>
     public Message Send(Message message)
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Telemetry is destroyed, cannot send messages");
+            throw new DestroyedObjectException("Telemetry is destroyed, cannot send messages");
         }
 
         IPort[] sortedPorts = [.. Ports.OrderByDescending(port => port.Priority)];
@@ -108,7 +109,7 @@ public class Telemetry : IDestroyable
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException(
+            throw new DestroyedObjectException(
                 "Telemetry is already destroyed, cannot destroy again"
             );
         }

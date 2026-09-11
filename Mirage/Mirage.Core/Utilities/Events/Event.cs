@@ -1,3 +1,4 @@
+using Mirage.Core.Exceptions;
 using Mirage.Core.Interfaces;
 
 namespace Mirage.Core.Utilities.Events;
@@ -52,6 +53,9 @@ public abstract class Event<TPayload> : IDestroyable
     /// </summary>
     protected HashSet<EventConnection<TPayload>> Connections = [];
 
+    /// <summary>
+    /// Gets a value indicating whether the event has been destroyed.
+    /// </summary>
     public bool Destroyed { get; private set; }
 
     /// <summary>
@@ -63,14 +67,14 @@ public abstract class Event<TPayload> : IDestroyable
     /// Defaults to <see langword="false"/>.
     /// </param>
     /// <returns>An <see cref="EventConnection{TPayload}"/> representing the subscription.</returns>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when the event has already been destroyed.
     /// </exception>
     public EventConnection<TPayload> Connect(Action<TPayload> callback, bool persistent = false)
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Event is destroyed, cannot connect");
+            throw new DestroyedObjectException("Event is destroyed, cannot connect");
         }
 
         EventConnection<TPayload> connection = null!;
@@ -89,14 +93,14 @@ public abstract class Event<TPayload> : IDestroyable
     /// If <see langword="true"/>, clears all connections including persistent ones.
     /// Defaults to <see langword="false"/>.
     /// </param>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when the event has already been destroyed.
     /// </exception>
     public void Clear(bool force = false)
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Event is destroyed, cannot clear");
+            throw new DestroyedObjectException("Event is destroyed, cannot clear");
         }
 
         if (force)
@@ -121,11 +125,17 @@ public abstract class Event<TPayload> : IDestroyable
         return new(callback => Connect(callback));
     }
 
+    /// <summary>
+    /// Destroys the event and removes all active connections.
+    /// </summary>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the event has already been destroyed.
+    /// </exception>
     public void Destroy()
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Event is already destroyed, cannot destroy again");
+            throw new DestroyedObjectException("Event is already destroyed, cannot destroy again");
         }
 
         Connections.Clear();

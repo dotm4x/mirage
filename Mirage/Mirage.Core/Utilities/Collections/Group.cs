@@ -1,4 +1,5 @@
 using System.Collections;
+using Mirage.Core.Exceptions;
 using Mirage.Core.Interfaces;
 using Mirage.Core.Utilities.Events;
 
@@ -160,7 +161,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Group is destroyed");
+            throw new DestroyedObjectException("Group is destroyed");
         }
     }
 
@@ -177,8 +178,11 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// </summary>
     /// <param name="items">The items to add.</param>
     /// <returns>The items that were added.</returns>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the group has been destroyed.
+    /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when the group has been destroyed or an item is already contained in the group.
+    /// Thrown when an item is already contained in the group.
     /// </exception>
     public TItem[] Add(params TItem[] items)
     {
@@ -205,8 +209,11 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// Removes one or more items from the group.
     /// </summary>
     /// <param name="items">The items to remove.</param>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the group has been destroyed.
+    /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when the group has been destroyed or an item is not contained in the group.
+    /// Thrown when an item is not contained in the group.
     /// </exception>
     public void Remove(params TItem[] items)
     {
@@ -288,7 +295,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <summary>
     /// Removes all items from the group.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when the group has been destroyed.
     /// </exception>
     public void Clear()
@@ -320,7 +327,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Group is already destroyed, cannot destroy again");
+            throw new DestroyedObjectException("Group is already destroyed, cannot destroy again");
         }
 
         Clear();

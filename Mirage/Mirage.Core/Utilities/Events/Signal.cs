@@ -1,3 +1,4 @@
+using Mirage.Core.Exceptions;
 using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core.Utilities.Events;
@@ -24,14 +25,14 @@ public class Signal<TPayload> : Event<TPayload>
     /// Dispatches the signal, invoking all connected listener callbacks with the provided payload.
     /// </summary>
     /// <param name="payload">The value passed to each event listener.</param>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when the signal has already been destroyed.
     /// </exception>
     public void Fire(TPayload payload)
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Signal is destroyed, cannot fire");
+            throw new DestroyedObjectException("Signal is destroyed, cannot fire");
         }
 
         foreach (var connection in Connections)

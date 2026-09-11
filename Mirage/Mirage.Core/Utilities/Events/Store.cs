@@ -1,3 +1,4 @@
+using Mirage.Core.Exceptions;
 using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core.Utilities.Events;
@@ -71,14 +72,14 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
     /// Updates the store's value and notifies listeners if the value has changed.
     /// </summary>
     /// <param name="value">The new value to set.</param>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="DestroyedObjectException">
     /// Thrown when the store has already been destroyed.
     /// </exception>
     public void Set(TValue value)
     {
         if (Destroyed)
         {
-            throw new InvalidOperationException("Store is destroyed, cannot set value");
+            throw new DestroyedObjectException("Store is destroyed, cannot set value");
         }
 
         if (equals is not null)
