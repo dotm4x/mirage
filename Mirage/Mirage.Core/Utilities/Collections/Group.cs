@@ -123,7 +123,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     public ReadonlyEvent<Unit> OnClear { get; }
 
     /// <summary>
-    /// Creates a new instance of a <see cref="Group{TItem}"/>.
+    /// Initializes a new instance of the <see cref="Group{TItem}"/> class.
     /// </summary>
     /// <param name="items">
     /// The initial items to add to the group, or <see langword="null"/> to

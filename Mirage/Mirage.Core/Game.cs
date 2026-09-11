@@ -67,7 +67,7 @@ public abstract class Game : IDestroyable
     private IReadOnlyList<Module>? moduleOrder;
 
     /// <summary>
-    /// Creates a new instance of a <see cref="Game"/>.
+    /// Initializes a new instance of the <see cref="Game"/> class.
     /// </summary>
     /// <param name="services">
     /// The initial modules to register.

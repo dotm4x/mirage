@@ -115,7 +115,7 @@ public abstract class Module : IDestroyable
     public bool Destroyed { get; private set; }
 
     /// <summary>
-    /// Creates an instance of an <see cref="Module"/>.
+    /// Initializes a new instance of the <see cref="Module"/> class.
     /// </summary>
     /// <param name="identifier">
     /// The unique identifier of the module.

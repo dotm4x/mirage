@@ -37,7 +37,7 @@ public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> ge
 /// </code>
 /// </example>
 /// <remarks>
-/// Creates an instance of a <see cref="Store{TValue}"/>.
+/// Initializes a new instance of the <see cref="Store{TValue}"/> class.
 /// </remarks>
 /// <param name="value">The initial value of the store.</param>
 /// <param name="equals">
