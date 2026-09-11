@@ -98,6 +98,20 @@ public abstract class Game : IDestroyable
     }
 
     /// <summary>
+    /// Gets a registered module of the specified type.
+    /// </summary>
+    /// <typeparam name="TModule">The type of the module to retrieve.</typeparam>
+    /// <returns>The registered module of the specified type.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no module or more than one module matches the specified type.
+    /// </exception>
+    protected TModule Require<TModule>()
+        where TModule : Module
+    {
+        return modules.Values.OfType<TModule>().Single();
+    }
+
+    /// <summary>
     /// Called when the game has successfully started all modules.
     /// </summary>
     /// <remarks>
