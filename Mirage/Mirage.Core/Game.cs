@@ -16,9 +16,9 @@ public enum GameState
 
 public abstract class Game : IDestroyable
 {
-    private readonly Dictionary<string, Service> services = [];
+    private readonly Dictionary<string, Module> modules = [];
 
-    public IReadOnlyDictionary<string, Service> Services { get; }
+    public IReadOnlyDictionary<string, Module> Modules { get; }
 
     public readonly Telemetry.Telemetry Telemetry;
 
@@ -29,16 +29,16 @@ public abstract class Game : IDestroyable
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
-    private IReadOnlyList<Service>? serviceOrder;
+    private IReadOnlyList<Module>? moduleOrder;
 
-    protected Game(IEnumerable<Service> services, Telemetry.Telemetry? telemetry = null)
+    protected Game(IEnumerable<Module> services, Telemetry.Telemetry? telemetry = null)
     {
-        foreach (var service in services)
+        foreach (var module in services)
         {
-            if (!this.services.TryAdd(service.Identifier, service))
+            if (!this.modules.TryAdd(module.Identifier, module))
             {
                 throw new InvalidOperationException(
-                    $"Duplicate service identifier found: '{service.Identifier}'"
+                    $"Duplicate module identifier found: '{module.Identifier}'"
                 );
             }
         }
@@ -46,7 +46,7 @@ public abstract class Game : IDestroyable
         Telemetry = telemetry ?? new();
         State = state.AsReadonly();
 
-        Services = this.services;
+        Modules = this.modules;
     }
 
     protected virtual void OnStart() { }
@@ -75,32 +75,32 @@ public abstract class Game : IDestroyable
 
         Telemetry.Send("Game is starting", "Game", MessageKind.Information);
 
-        List<Service> startedServices = [];
+        List<Module> startedServices = [];
 
         try
         {
-            IReadOnlyList<Service> sortedServices = ResolveServiceOrder();
+            IReadOnlyList<Module> sortedModules = ResolveModuleOrder();
 
-            ServiceContext context = new()
+            ModuleContext context = new()
             {
                 Telemetry = Telemetry,
-                Services = new ServiceContainer(sortedServices),
+                Modules = new ModuleContainer(sortedModules),
             };
 
-            foreach (var service in sortedServices)
+            foreach (var module in sortedModules)
             {
-                service.Inject(context);
+                module.Inject(context);
             }
 
-            foreach (var service in sortedServices)
+            foreach (var module in sortedModules)
             {
-                service.Start();
-                startedServices.Add(service);
+                module.Start();
+                startedServices.Add(module);
             }
 
             OnStart();
 
-            serviceOrder = sortedServices;
+            moduleOrder = sortedModules;
 
             state.Set(GameState.Running);
 
@@ -145,15 +145,15 @@ public abstract class Game : IDestroyable
 
         try
         {
-            IReadOnlyList<Service> sortedServices = serviceOrder ?? ResolveServiceOrder();
+            IReadOnlyList<Module> sortedModules = moduleOrder ?? ResolveModuleOrder();
 
-            for (int index = sortedServices.Count - 1; index >= 0; index--)
+            for (int index = sortedModules.Count - 1; index >= 0; index--)
             {
-                Service service = sortedServices[index];
+                Module module = sortedModules[index];
 
-                if (service.State.Get() == ServiceState.Running)
+                if (module.State.Get() == ModuleState.Running)
                 {
-                    service.Stop();
+                    module.Stop();
                 }
             }
 
@@ -197,12 +197,12 @@ public abstract class Game : IDestroyable
 
         OnDestroy();
 
-        foreach (var service in services.Values)
+        foreach (var module in modules.Values)
         {
-            service.Destroy();
+            module.Destroy();
         }
 
-        services.Clear();
+        modules.Clear();
 
         state.Destroy();
 
@@ -213,21 +213,21 @@ public abstract class Game : IDestroyable
         Telemetry.Destroy();
     }
 
-    private void RollbackStartedServices(IReadOnlyList<Service> startedServices)
+    private void RollbackStartedServices(IReadOnlyList<Module> startedServices)
     {
         for (int index = startedServices.Count - 1; index >= 0; index--)
         {
-            Service service = startedServices[index];
+            Module module = startedServices[index];
 
             try
             {
-                service.Stop();
+                module.Stop();
             }
             catch (Exception exception)
             {
                 Telemetry.Send(
-                    $"Failed to rollback service '{service.Identifier}' after game startup failure.",
-                    service.Identifier,
+                    $"Failed to rollback module '{module.Identifier}' after game startup failure.",
+                    module.Identifier,
                     MessageKind.Error,
                     new Dictionary<string, object?> { ["Exception"] = exception }
                 );
@@ -235,44 +235,44 @@ public abstract class Game : IDestroyable
         }
     }
 
-    private IReadOnlyList<Service> ResolveServiceOrder()
+    private IReadOnlyList<Module> ResolveModuleOrder()
     {
-        Dictionary<string, Service> servicesByIdentifier = [];
+        Dictionary<string, Module> servicesByIdentifier = [];
 
-        foreach (var service in services.Values)
+        foreach (var module in modules.Values)
         {
-            servicesByIdentifier.Add(service.Identifier, service);
+            servicesByIdentifier.Add(module.Identifier, module);
         }
 
-        List<Service> sortedServices = [];
+        List<Module> sortedModules = [];
         HashSet<string> visiting = [];
         HashSet<string> visited = [];
 
-        void Resolve(Service service, List<string> dependencyPath)
+        void Resolve(Module module, List<string> dependencyPath)
         {
-            if (visiting.Contains(service.Identifier))
+            if (visiting.Contains(module.Identifier))
             {
-                string cyclePath = string.Join(" -> ", [.. dependencyPath, service.Identifier]);
+                string cyclePath = string.Join(" -> ", [.. dependencyPath, module.Identifier]);
 
                 throw new InvalidOperationException(
-                    $"Circular dependency detected in services: {cyclePath}"
+                    $"Circular dependency detected in modules: {cyclePath}"
                 );
             }
 
-            if (visited.Contains(service.Identifier))
+            if (visited.Contains(module.Identifier))
             {
                 return;
             }
 
-            visiting.Add(service.Identifier);
-            dependencyPath.Add(service.Identifier);
+            visiting.Add(module.Identifier);
+            dependencyPath.Add(module.Identifier);
 
-            foreach (var dependency in service.Dependencies)
+            foreach (var dependency in module.Dependencies)
             {
-                if (!servicesByIdentifier.TryGetValue(dependency, out Service? dependencyService))
+                if (!servicesByIdentifier.TryGetValue(dependency, out Module? dependencyService))
                 {
                     throw new InvalidOperationException(
-                        $"Service '{service.Identifier}' requires missing dependency '{dependency}'"
+                        $"Module '{module.Identifier}' requires missing dependency '{dependency}'"
                     );
                 }
 
@@ -281,19 +281,17 @@ public abstract class Game : IDestroyable
 
             dependencyPath.RemoveAt(dependencyPath.Count - 1);
 
-            visiting.Remove(service.Identifier);
-            visited.Add(service.Identifier);
-            sortedServices.Add(service);
+            visiting.Remove(module.Identifier);
+            visited.Add(module.Identifier);
+            sortedModules.Add(module);
         }
-
-        foreach (var service in services.Values)
+        foreach (var module in modules.Values)
         {
-            if (!visited.Contains(service.Identifier))
+            if (!visited.Contains(module.Identifier))
             {
-                Resolve(service, []);
+                Resolve(module, []);
             }
         }
-
-        return sortedServices;
+        return sortedModules;
     }
 }
