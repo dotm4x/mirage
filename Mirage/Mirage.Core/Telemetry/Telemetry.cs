@@ -6,30 +6,29 @@ using Mirage.Core.Utilities.Events;
 namespace Mirage.Core.Telemetry;
 
 /// <summary>
-///   Represents a telemetry manager responsible for collecting, organizing,
-///   and dispatching messages across multiple prioritized output ports.
+/// Represents a telemetry manager responsible for collecting, organizing,
+/// and dispatching messages across multiple prioritized output ports.
 /// </summary>
 public class Telemetry : IDestroyable
 {
     /// <summary>
-    ///   The group containing all registered telemetry output ports.
+    /// The group containing all registered telemetry output ports.
     /// </summary>
     public readonly Group<IPort> Ports = [];
-
     public bool Destroyed { get; private set; }
 
     private readonly Signal<Message> onSend = new();
 
     /// <summary>
-    ///   Event fired when a message has been sent.
+    /// Event fired when a message has been sent.
     /// </summary>
     public readonly ReadonlyEvent<Message> OnSend;
 
     /// <summary>
-    ///   Initializes a new instance of the <see cref="Telemetry"/> class.
+    /// Initializes a new instance of the <see cref="Telemetry"/> class.
     /// </summary>
     /// <param name="ports">
-    ///   The initial telemetry output ports to register.
+    /// The initial telemetry output ports to register.
     /// </param>
     public Telemetry(IEnumerable<IPort>? ports = null)
     {
@@ -42,17 +41,49 @@ public class Telemetry : IDestroyable
     }
 
     /// <summary>
-    ///   Dispatches a message to all registered output ports in descending
-    ///   order of their priority.
+    /// Dispatches a telemetry message using the specified content and optional
+    /// message information.
     /// </summary>
-    /// <param name="message">
-    ///   The message to dispatch.
+    /// <param name="content">
+    /// The content of the message.
+    /// </param>
+    /// <param name="source">
+    /// The optional origin component, service, or module of the message.
+    /// </param>
+    /// <param name="kind">
+    /// The severity or classification of the message.
+    /// </param>
+    /// <param name="metadata">
+    /// Optional contextual key-value metadata associated with the message.
     /// </param>
     /// <returns>
-    ///   The dispatched message.
+    /// The dispatched message.
     /// </returns>
     /// <exception cref="InvalidOperationException">
-    ///   Thrown when telemetry has already been destroyed.
+    /// Thrown when telemetry has already been destroyed.
+    /// </exception>
+    public Message Send(
+        string content,
+        string source = "",
+        MessageKind kind = MessageKind.Information,
+        IReadOnlyDictionary<string, object?>? metadata = null
+    )
+    {
+        return Send(new Message(content, source, kind, metadata));
+    }
+
+    /// <summary>
+    /// Dispatches an existing telemetry message to all registered output ports
+    /// in descending order of their priority.
+    /// </summary>
+    /// <param name="message">
+    /// The message to dispatch.
+    /// </param>
+    /// <returns>
+    /// The dispatched message.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when telemetry has already been destroyed.
     /// </exception>
     public Message Send(Message message)
     {
