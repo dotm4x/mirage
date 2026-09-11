@@ -66,6 +66,14 @@ public abstract class Module : IDestroyable
     {
         if (injected)
         {
+            Telemetry.Send(
+                $"Module '{Identifier}' has been destroyed.",
+                Identifier,
+                MessageKind.Debug
+            );
+        }
+        if (injected)
+        {
             throw new InvalidOperationException(
                 $"Module '{Identifier}' has already been injected."
             );
@@ -246,6 +254,13 @@ public abstract class Module : IDestroyable
 
         Destroyed = true;
 
-        Telemetry.Send($"Module '{Identifier}' has been destroyed.", Identifier, MessageKind.Debug);
+        if (injected)
+        {
+            Telemetry.Send(
+                $"Module '{Identifier}' has been destroyed.",
+                Identifier,
+                MessageKind.Debug
+            );
+        }
     }
 }
