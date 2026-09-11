@@ -128,12 +128,12 @@ public abstract class Game : IDestroyable
     /// Thrown when multiple modules have the same identifier.
     /// </exception>
     protected Game(
-        IEnumerable<Module> modules,
+        IEnumerable<Module>? modules = null,
         double targetFramerate = 60,
         Telemetry.Telemetry? telemetry = null
     )
     {
-        foreach (var module in modules)
+        foreach (var module in modules ?? [])
         {
             if (!this.modules.TryAdd(module.Identifier, module))
             {
