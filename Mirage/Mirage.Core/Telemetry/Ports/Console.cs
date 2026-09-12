@@ -13,7 +13,6 @@ public sealed class ConsolePort : IPort
     private const string AnsiCyan = "\x1b[36m";
     private const string AnsiGreen = "\x1b[32m";
     private const string AnsiYellow = "\x1b[33m";
-    private const string AnsiRed = "\x1b[31m";
     private const string AnsiGray = "\x1b[90m";
     private const string AnsiReset = "\x1b[0m";
 
@@ -97,7 +96,6 @@ public sealed class ConsolePort : IPort
             MessageKind.Debug => "DEBUG",
             MessageKind.Information => "INFO",
             MessageKind.Warn => "WARN",
-            MessageKind.Error => "ERROR",
             _ => "INFO",
         };
     }
@@ -109,7 +107,6 @@ public sealed class ConsolePort : IPort
             MessageKind.Debug => AnsiCyan,
             MessageKind.Information => AnsiGreen,
             MessageKind.Warn => AnsiYellow,
-            MessageKind.Error => AnsiRed,
             _ => AnsiGreen,
         };
     }

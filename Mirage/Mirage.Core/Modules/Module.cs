@@ -290,16 +290,9 @@ public abstract class Module : IDestroyable
                 MessageKind.Information
             );
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             state.Set(ModuleState.Idle);
-
-            Telemetry.Send(
-                $"Module '{Identifier}' failed to start.",
-                Identifier,
-                MessageKind.Error,
-                new Dictionary<string, object?> { ["Exception"] = exception }
-            );
 
             throw;
         }
@@ -353,16 +346,9 @@ public abstract class Module : IDestroyable
                 MessageKind.Information
             );
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             state.Set(ModuleState.Running);
-
-            Telemetry.Send(
-                $"Module '{Identifier}' failed to stop.",
-                Identifier,
-                MessageKind.Error,
-                new Dictionary<string, object?> { ["Exception"] = exception }
-            );
 
             throw;
         }

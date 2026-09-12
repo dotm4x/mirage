@@ -133,6 +133,8 @@ public abstract class Game : IDestroyable
         Telemetry.Telemetry? telemetry = null
     )
     {
+        Telemetry = telemetry ?? new();
+
         foreach (var module in modules ?? [])
         {
             if (!this.modules.TryAdd(module.Identifier, module))
@@ -144,7 +146,6 @@ public abstract class Game : IDestroyable
         }
 
         TargetFramerate = targetFramerate;
-        Telemetry = telemetry ?? new();
         State = state.AsReadonly();
 
         Modules = this.modules;
@@ -281,18 +282,11 @@ public abstract class Game : IDestroyable
 
             Telemetry.Send("Game is now running", "Game", MessageKind.Information);
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             RollbackStartedModules(startedModules);
 
             state.Set(GameState.Idle);
-
-            Telemetry.Send(
-                "Game failed to start",
-                "Game",
-                MessageKind.Error,
-                new Dictionary<string, object?> { ["Exception"] = exception }
-            );
 
             throw;
         }
@@ -403,16 +397,9 @@ public abstract class Game : IDestroyable
 
             Telemetry.Send("Game is now idle", "Game", MessageKind.Information);
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             state.Set(GameState.Running);
-
-            Telemetry.Send(
-                "Game failed to stop",
-                "Game",
-                MessageKind.Error,
-                new Dictionary<string, object?> { ["Exception"] = exception }
-            );
 
             throw;
         }
@@ -434,15 +421,7 @@ public abstract class Game : IDestroyable
             {
                 module.Stop();
             }
-            catch (Exception exception)
-            {
-                Telemetry.Send(
-                    $"Failed to rollback module '{module.Identifier}' after game startup failure.",
-                    module.Identifier,
-                    MessageKind.Error,
-                    new Dictionary<string, object?> { ["Exception"] = exception }
-                );
-            }
+            catch (Exception) { }
         }
     }
 

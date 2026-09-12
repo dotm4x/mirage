@@ -19,11 +19,6 @@ public enum MessageKind
     /// Indicates a warning about a potentially problematic situation.
     /// </summary>
     Warn,
-
-    /// <summary>
-    /// Indicates an error representing a failure or unexpected condition.
-    /// </summary>
-    Error,
 }
 
 /// <summary>
