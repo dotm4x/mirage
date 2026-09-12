@@ -2,6 +2,7 @@
   <Folder Name="/Mirage/">
     <Project Path="Mirage/Mirage.Core/Mirage.Core.csproj" />
     <Project Path="Mirage/Mirage.Sandbox/Mirage.Sandbox.csproj" />
+    <Project Path="Mirage/Mirage.Scheduler/Mirage.Scheduler.csproj" />
     <Project Path="Mirage/Mirage.Tests/Mirage.Tests.csproj" />
   </Folder>
 </Solution>
