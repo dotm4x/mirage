@@ -213,13 +213,16 @@ public abstract class Game : IDestroyable
     /// its dependencies through dependency injection before its startup logic
     /// is executed.
     ///
-    /// After all modules have started successfully, the game enters its main
-    /// update loop. The loop invokes <see cref="OnUpdate(double)"/> once per
-    /// frame and attempts to maintain <see cref="TargetFramerate"/>.
+    /// After all modules have started successfully, the game transitions to
+    /// <see cref="GameState.Running"/> and <see cref="OnStart"/> is invoked.
+    /// The game then enters its main update loop.
+    ///
+    /// The update loop invokes <see cref="OnUpdate(double)"/> once per frame
+    /// and attempts to maintain <see cref="TargetFramerate"/>.
     ///
     /// The method does not return while the game remains running.
-    /// The game loop ends when <see cref="Stop"/> changes the game state back
-    /// to <see cref="GameState.Idle"/>.
+    /// The game loop ends when <see cref="Stop"/> changes the game state to
+    /// <see cref="GameState.Idle"/>.
     /// </remarks>
     /// <exception cref="DestroyedObjectException">
     /// Thrown when the game has already been destroyed.
@@ -271,11 +274,10 @@ public abstract class Game : IDestroyable
                 startedModules.Add(module);
             }
 
-            OnStart();
-
             moduleOrder = sortedModules;
-
             state.Set(GameState.Running);
+
+            OnStart();
 
             Telemetry.Send("Game is now running", "Game", MessageKind.Information);
         }
@@ -341,6 +343,20 @@ public abstract class Game : IDestroyable
     /// <summary>
     /// Stops the game and all running modules in reverse dependency order.
     /// </summary>
+    /// <remarks>
+    /// The game transitions to <see cref="GameState.Stopping"/> before its
+    /// modules are stopped.
+    ///
+    /// Modules are stopped in reverse dependency order. After all running
+    /// modules have stopped successfully, <see cref="OnStop"/> is invoked
+    /// while the game remains in the stopping state.
+    ///
+    /// Once shutdown logic has completed successfully, the game transitions
+    /// to <see cref="GameState.Idle"/>.
+    ///
+    /// If stopping fails, the game returns to
+    /// <see cref="GameState.Running"/> and the exception is rethrown.
+    /// </remarks>
     /// <exception cref="DestroyedObjectException">
     /// Thrown when the game has already been destroyed.
     /// </exception>
