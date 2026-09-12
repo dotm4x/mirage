@@ -160,10 +160,8 @@ public abstract class Event<TPayload> : IDestroyable
             {
                 connection.Callback(payload);
             }
-            catch (Exception exception)
+            catch
             {
-                Console.Error.WriteLine($"Error in event listener: {exception}");
-
                 throw;
             }
         }
