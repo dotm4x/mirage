@@ -1,10 +1,11 @@
-namespace Mirage.Tests.Core;
-
 using Mirage.Core;
 using Mirage.Core.Exceptions;
 using Mirage.Core.Modules;
+using Mirage.Core.Telemetry;
 using Xunit;
 using CoreTelemetry = Mirage.Core.Telemetry.Telemetry;
+
+namespace Mirage.Tests.Core;
 
 public class GameTest
 {
@@ -41,30 +42,38 @@ public class GameTest
     }
 
     [Fact]
-    public void Start_WhenGameIsIdle_StartsAllModules()
+    public async Task Start_WhenGameIsIdle_StartsAllModules()
     {
         var firstModule = new TestModule("First");
         var secondModule = new TestModule("Second");
+
         var game = new TestGame([firstModule, secondModule]);
 
-        game.Start();
+        Task startTask = StartGame(game);
 
         Assert.Equal(GameState.Running, game.State.Get());
         Assert.Equal(ModuleState.Running, firstModule.State.Get());
         Assert.Equal(ModuleState.Running, secondModule.State.Get());
+
+        game.Stop();
+        await startTask;
     }
 
     [Fact]
-    public void Start_WhenGameIsRunning_Throws()
+    public async Task Start_WhenGameIsRunning_Throws()
     {
         var game = new TestGame();
-        game.Start();
+
+        Task startTask = StartGame(game);
 
         Assert.Throws<InvalidOperationException>(game.Start);
+
+        game.Stop();
+        await startTask;
     }
 
     [Fact]
-    public void Start_WhenModuleHasDependencies_StartsDependenciesFirst()
+    public async Task Start_WhenModuleHasDependencies_StartsDependenciesFirst()
     {
         var startOrder = new List<string>();
 
@@ -78,20 +87,26 @@ public class GameTest
 
         var game = new TestGame([module, dependency]);
 
-        game.Start();
+        Task startTask = StartGame(game);
 
         Assert.Equal(["Dependency", "Module"], startOrder);
+
+        game.Stop();
+        await startTask;
     }
 
     [Fact]
-    public void Start_InjectsModulesBeforeStarting()
+    public async Task Start_InjectsModulesBeforeStarting()
     {
         var module = new TestModule("Test");
         var game = new TestGame([module]);
 
-        game.Start();
+        Task startTask = StartGame(game);
 
         Assert.True(module.WasInjected);
+
+        game.Stop();
+        await startTask;
     }
 
     [Fact]
@@ -130,14 +145,80 @@ public class GameTest
     }
 
     [Fact]
-    public void Stop_WhenGameIsRunning_StopsAllRunningModules()
+    public async Task Start_CallsOnUpdate()
+    {
+        var updates = 0;
+
+        var game = new TestGame(onUpdate: _ => updates++, stopAfterUpdates: 1);
+
+        Task startTask = Task.Run(game.Start);
+
+        await startTask;
+
+        Assert.Equal(1, updates);
+        Assert.Equal(GameState.Idle, game.State.Get());
+    }
+
+    [Fact]
+    public async Task Start_OnUpdateReceivesDeltaTime()
+    {
+        double deltaTime = -1;
+
+        var game = new TestGame(
+            onUpdate: elapsedTime => deltaTime = elapsedTime,
+            stopAfterUpdates: 1
+        );
+
+        Task startTask = Task.Run(game.Start);
+
+        await startTask;
+
+        Assert.True(deltaTime >= 0);
+        Assert.Equal(GameState.Idle, game.State.Get());
+    }
+
+    [Fact]
+    public async Task Start_WhenOnUpdateThrows_ReturnsGameToIdle()
+    {
+        var game = new TestGame(onUpdate: _ =>
+            throw new InvalidOperationException("Test exception")
+        );
+
+        Task startTask = Task.Run(game.Start);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => startTask);
+
+        Assert.Equal(GameState.Running, game.State.Get());
+        game.Stop();
+    }
+
+    [Fact]
+    public void Start_UsesConfiguredTargetFramerate()
+    {
+        var game = new TestGame(targetFramerate: 60);
+
+        Assert.Equal(60, game.TargetFramerate);
+    }
+
+    [Fact]
+    public void Start_WhenTargetFramerateIsUnlimited_AllowsZero()
+    {
+        var game = new TestGame(targetFramerate: 0);
+
+        Assert.Equal(0, game.TargetFramerate);
+    }
+
+    [Fact]
+    public async Task Stop_WhenGameIsRunning_StopsAllRunningModules()
     {
         var firstModule = new TestModule("First");
         var secondModule = new TestModule("Second");
+
         var game = new TestGame([firstModule, secondModule]);
 
-        game.Start();
+        Task startTask = StartGame(game);
         game.Stop();
+        await startTask;
 
         Assert.Equal(GameState.Idle, game.State.Get());
         Assert.Equal(ModuleState.Idle, firstModule.State.Get());
@@ -145,7 +226,7 @@ public class GameTest
     }
 
     [Fact]
-    public void Stop_StopsModulesInReverseDependencyOrder()
+    public async Task Stop_StopsModulesInReverseDependencyOrder()
     {
         var stopOrder = new List<string>();
 
@@ -159,8 +240,9 @@ public class GameTest
 
         var game = new TestGame([module, dependency]);
 
-        game.Start();
+        Task startTask = StartGame(game);
         game.Stop();
+        await startTask;
 
         Assert.Equal(["Module", "Dependency"], stopOrder);
     }
@@ -177,6 +259,7 @@ public class GameTest
     public void Start_WhenDependencyIsMissing_Throws()
     {
         var module = new TestModule("Module", ["Missing"]);
+
         var game = new TestGame([module]);
 
         Assert.Throws<InvalidOperationException>(game.Start);
@@ -189,6 +272,7 @@ public class GameTest
     {
         var firstModule = new TestModule("First", ["Second"]);
         var secondModule = new TestModule("Second", ["First"]);
+
         var game = new TestGame([firstModule, secondModule]);
 
         Assert.Throws<InvalidOperationException>(game.Start);
@@ -201,6 +285,7 @@ public class GameTest
     {
         var firstModule = new TestModule("First");
         var secondModule = new TestModule("Second");
+
         var game = new TestGame([firstModule, secondModule]);
 
         game.Destroy();
@@ -212,12 +297,16 @@ public class GameTest
     }
 
     [Fact]
-    public void Destroy_WhenGameIsRunning_Throws()
+    public async Task Destroy_WhenGameIsRunning_Throws()
     {
         var game = new TestGame();
-        game.Start();
+
+        Task startTask = StartGame(game);
 
         Assert.Throws<InvalidOperationException>(game.Destroy);
+
+        game.Stop();
+        await startTask;
     }
 
     [Fact]
@@ -250,10 +339,39 @@ public class GameTest
         Assert.Throws<DestroyedObjectException>(game.Stop);
     }
 
+    private static Task StartGame(TestGame game)
+    {
+        Task startTask = Task.Run(game.Start);
+
+        Assert.True(
+            SpinWait.SpinUntil(() => game.State.Get() == GameState.Running, TimeSpan.FromSeconds(1))
+        );
+
+        return startTask;
+    }
+
     private sealed class TestGame(
         IEnumerable<Module>? modules = null,
-        CoreTelemetry? telemetry = null
-    ) : Game(modules ?? [], telemetry);
+        CoreTelemetry? telemetry = null,
+        int targetFramerate = 0,
+        Action<double>? onUpdate = null,
+        int? stopAfterUpdates = null
+    ) : Game(modules ?? [], telemetry: telemetry, targetFramerate: targetFramerate)
+    {
+        private int updates;
+
+        protected override void OnUpdate(double deltaTime)
+        {
+            updates++;
+
+            onUpdate?.Invoke(deltaTime);
+
+            if (stopAfterUpdates.HasValue && updates >= stopAfterUpdates.Value)
+            {
+                Stop();
+            }
+        }
+    }
 
     private sealed class TestModule(
         string identifier,
