@@ -49,7 +49,7 @@ public class GameTest
 
         var game = new TestGame([firstModule, secondModule]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Equal(GameState.Running, game.State.Get());
         Assert.Equal(ModuleState.Running, firstModule.State.Get());
@@ -64,7 +64,7 @@ public class GameTest
     {
         var game = new TestGame();
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Throws<InvalidOperationException>(game.Start);
 
@@ -87,7 +87,7 @@ public class GameTest
 
         var game = new TestGame([module, dependency]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Equal(["Dependency", "Module"], startOrder);
 
@@ -101,7 +101,7 @@ public class GameTest
         var module = new TestModule("Test");
         var game = new TestGame([module]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.True(module.WasInjected);
 
@@ -151,7 +151,7 @@ public class GameTest
 
         var game = new TestGame(onUpdate: _ => updates++, stopAfterUpdates: 1);
 
-        Task startTask = Task.Run(game.Start);
+        var startTask = Task.Run(game.Start);
 
         await startTask;
 
@@ -169,7 +169,7 @@ public class GameTest
             stopAfterUpdates: 1
         );
 
-        Task startTask = Task.Run(game.Start);
+        var startTask = Task.Run(game.Start);
 
         await startTask;
 
@@ -184,7 +184,7 @@ public class GameTest
             throw new InvalidOperationException("Test exception")
         );
 
-        Task startTask = Task.Run(game.Start);
+        var startTask = Task.Run(game.Start);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => startTask);
 
@@ -216,7 +216,7 @@ public class GameTest
 
         var game = new TestGame([firstModule, secondModule]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
         game.Stop();
         await startTask;
 
@@ -240,7 +240,7 @@ public class GameTest
 
         var game = new TestGame([module, dependency]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
         game.Stop();
         await startTask;
 
@@ -301,7 +301,7 @@ public class GameTest
     {
         var game = new TestGame();
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Throws<InvalidOperationException>(game.Destroy);
 
@@ -341,7 +341,7 @@ public class GameTest
 
     private static Task StartGame(TestGame game)
     {
-        Task startTask = Task.Run(game.Start);
+        var startTask = Task.Run(game.Start);
 
         Assert.True(
             SpinWait.SpinUntil(() => game.State.Get() == GameState.Running, TimeSpan.FromSeconds(1))
@@ -358,15 +358,15 @@ public class GameTest
         int? stopAfterUpdates = null
     ) : Game(modules ?? [], telemetry: telemetry, targetFramerate: targetFramerate)
     {
-        private int updates;
+        private int _updates;
 
         protected override void OnUpdate(double deltaTime)
         {
-            updates++;
+            _updates++;
 
             onUpdate?.Invoke(deltaTime);
 
-            if (stopAfterUpdates.HasValue && updates >= stopAfterUpdates.Value)
+            if (stopAfterUpdates.HasValue && _updates >= stopAfterUpdates.Value)
             {
                 Stop();
             }

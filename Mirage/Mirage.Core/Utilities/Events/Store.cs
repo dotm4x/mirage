@@ -8,8 +8,6 @@ namespace Mirage.Core.Utilities.Events;
 /// <typeparam name="TValue">The type of the stored value.</typeparam>
 public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> get)
 {
-    #region Properties
-
     /// <summary>
     /// Gets the current value of the store without allowing mutation.
     /// </summary>
@@ -19,8 +17,6 @@ public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> ge
     /// Gets the event interface used to subscribe to changes in the store.
     /// </summary>
     public ReadonlyEvent<TValue> Event { get; } = @event;
-
-    #endregion
 }
 
 /// <summary>
@@ -49,17 +45,14 @@ public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> ge
 /// </param>
 public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = null) : Event<TValue>
 {
-    private readonly Func<TValue, TValue, bool>? equals = equals;
-    private TValue value = value;
-
-    #region Value Methods
+    private TValue _value = value;
 
     /// <summary>
     /// Gets the current value of the store.
     /// </summary>
     public TValue Get()
     {
-        return value;
+        return _value;
     }
 
     /// <summary>
@@ -69,7 +62,7 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
     /// <returns>A <see cref="ReadonlyStore{TValue}"/> view of this store.</returns>
     public new ReadonlyStore<TValue> AsReadonly()
     {
-        return new(base.AsReadonly(), Get);
+        return new ReadonlyStore<TValue>(base.AsReadonly(), Get);
     }
 
     /// <summary>
@@ -88,20 +81,18 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
 
         if (equals is not null)
         {
-            if (equals(this.value, value))
+            if (equals(_value, value))
             {
                 return;
             }
         }
-        else if (EqualityComparer<TValue>.Default.Equals(this.value, value))
+        else if (EqualityComparer<TValue>.Default.Equals(_value, value))
         {
             return;
         }
 
-        this.value = value;
+        _value = value;
 
-        Dispatch(this.value);
+        Dispatch(_value);
     }
-
-    #endregion
 }

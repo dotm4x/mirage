@@ -11,16 +11,10 @@ namespace Mirage.Core.Utilities.Collections;
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
 public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
 {
-    #region Properties
-
     /// <summary>
     /// Gets the number of items currently contained in the group.
     /// </summary>
     public int Count { get; } = items.Count();
-
-    #endregion
-
-    #region Collection Methods
 
     /// <summary>
     /// Determines whether the specified item is contained in the group.
@@ -82,8 +76,6 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
     {
         return GetEnumerator();
     }
-
-    #endregion
 }
 
 /// <summary>
@@ -93,12 +85,10 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
 public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 {
-    private readonly List<TItem> items = [];
-    private readonly Signal<TItem> onAdd = new();
-    private readonly Signal<TItem> onRemove = new();
-    private readonly Signal<Unit> onClear = new();
-
-    #region Properties and Events
+    private readonly List<TItem> _items = [];
+    private readonly Signal<TItem> _onAdd = new();
+    private readonly Signal<TItem> _onRemove = new();
+    private readonly Signal<Unit> _onClear = new();
 
     /// <summary>
     /// Gets the maximum number of items allowed in the group. A value of
@@ -109,7 +99,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <summary>
     /// Gets the number of items currently contained in the group.
     /// </summary>
-    public int Count => items.Count;
+    public int Count => _items.Count;
 
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
@@ -128,10 +118,6 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// Gets the event fired when the group is cleared.
     /// </summary>
     public ReadonlyEvent<Unit> OnClear { get; }
-
-    #endregion
-
-    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Group{TItem}"/> class.
@@ -161,14 +147,10 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
             Add(item);
         }
 
-        OnAdd = onAdd.AsReadonly();
-        OnRemove = onRemove.AsReadonly();
-        OnClear = onClear.AsReadonly();
+        OnAdd = _onAdd.AsReadonly();
+        OnRemove = _onRemove.AsReadonly();
+        OnClear = _onClear.AsReadonly();
     }
-
-    #endregion
-
-    #region Private Methods
 
     private void ThrowIfDestroyed()
     {
@@ -180,15 +162,11 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
     private void Truncate()
     {
-        if (Limit > 0 && items.Count >= Limit)
+        if (Limit > 0 && _items.Count >= Limit)
         {
-            Remove(items[0]);
+            Remove(_items[0]);
         }
     }
-
-    #endregion
-
-    #region Collection Methods
 
     /// <summary>
     /// Adds one or more items to the group.
@@ -207,7 +185,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
         foreach (var item in items)
         {
-            if (this.items.Contains(item))
+            if (_items.Contains(item))
             {
                 throw new InvalidOperationException(
                     "Item is already in the group, cannot add again"
@@ -215,8 +193,8 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
             }
 
             Truncate();
-            this.items.Add(item);
-            onAdd.Fire(item);
+            _items.Add(item);
+            _onAdd.Fire(item);
         }
 
         return items;
@@ -238,13 +216,13 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
         foreach (var item in items)
         {
-            if (!this.items.Contains(item))
+            if (!_items.Contains(item))
             {
                 throw new InvalidOperationException("Item is not in the group, cannot remove");
             }
 
-            onRemove.Fire(item);
-            this.items.Remove(item);
+            _onRemove.Fire(item);
+            _items.Remove(item);
         }
     }
 
@@ -258,7 +236,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// </returns>
     public bool Contains(TItem item)
     {
-        return items.Contains(item);
+        return _items.Contains(item);
     }
 
     /// <summary>
@@ -267,7 +245,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <param name="action">The action to perform for each item.</param>
     public void ForEach(Action<TItem> action)
     {
-        foreach (var item in items)
+        foreach (var item in _items)
         {
             action(item);
         }
@@ -279,7 +257,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <returns>A new array containing the items in the group.</returns>
     public TItem[] ToArray()
     {
-        return [.. items];
+        return [.. _items];
     }
 
     /// <summary>
@@ -288,7 +266,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <returns>A new list containing the items in the group.</returns>
     public List<TItem> ToList()
     {
-        return [.. items];
+        return [.. _items];
     }
 
     /// <summary>
@@ -297,7 +275,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <returns>An enumerator for the group.</returns>
     public IEnumerator<TItem> GetEnumerator()
     {
-        return items.GetEnumerator();
+        return _items.GetEnumerator();
     }
 
     /// <summary>
@@ -319,9 +297,9 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     {
         ThrowIfDestroyed();
 
-        onClear.Fire(Unit.Value);
+        _onClear.Fire(Unit.Value);
 
-        foreach (var item in items.ToArray())
+        foreach (var item in _items.ToArray())
         {
             Remove(item);
         }
@@ -337,12 +315,8 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// </returns>
     public ReadonlyGroup<TItem> AsReadonly()
     {
-        return new ReadonlyGroup<TItem>(items);
+        return new ReadonlyGroup<TItem>(_items);
     }
-
-    #endregion
-
-    #region Lifecycle Methods
 
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
@@ -354,12 +328,10 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
         Clear();
 
-        onAdd.Destroy();
-        onRemove.Destroy();
-        onClear.Destroy();
+        _onAdd.Destroy();
+        _onRemove.Destroy();
+        _onClear.Destroy();
 
         Destroyed = true;
     }
-
-    #endregion
 }

@@ -32,7 +32,7 @@ public class ModuleTest
         var module = new TestModule("Test");
         var game = new TestGame([module]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Equal(ModuleState.Running, module.State.Get());
 
@@ -49,7 +49,7 @@ public class ModuleTest
 
         var game = new TestGame([module]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.True(started);
 
@@ -63,7 +63,7 @@ public class ModuleTest
         var module = new TestModule("Test");
         var game = new TestGame([module]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Throws<InvalidOperationException>(game.Start);
 
@@ -92,7 +92,7 @@ public class ModuleTest
         var module = new TestModule("Test");
         var game = new TestGame([module]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
         game.Stop();
         await startTask;
 
@@ -108,7 +108,7 @@ public class ModuleTest
 
         var game = new TestGame([module]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
         game.Stop();
         await startTask;
 
@@ -140,7 +140,7 @@ public class ModuleTest
 
         var game = new TestGame([module]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Throws<InvalidOperationException>(game.Stop);
 
@@ -158,7 +158,7 @@ public class ModuleTest
 
         var game = new TestGame([module, dependency]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Same(dependency, module.GetDependency());
 
@@ -183,7 +183,7 @@ public class ModuleTest
 
         var game = new TestGame([module, dependency]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Throws<InvalidOperationException>(module.GetDependency);
 
@@ -230,7 +230,7 @@ public class ModuleTest
         var module = new TestModule("Test");
         var game = new TestGame([module]);
 
-        Task startTask = StartGame(game);
+        var startTask = StartGame(game);
 
         Assert.Throws<InvalidOperationException>(game.Destroy);
 
@@ -263,7 +263,7 @@ public class ModuleTest
 
     private static Task StartGame(TestGame game)
     {
-        Task startTask = Task.Run(game.Start);
+        var startTask = Task.Run(game.Start);
 
         Assert.True(
             SpinWait.SpinUntil(() => game.State.Get() == GameState.Running, TimeSpan.FromSeconds(1))

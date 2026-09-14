@@ -12,9 +12,7 @@ namespace Mirage.Core.Telemetry;
 /// </summary>
 public sealed class Telemetry : IDestroyable
 {
-    private readonly Signal<Message> onSend = new();
-
-    #region Properties and Events
+    private readonly Signal<Message> _onSend = new();
 
     /// <summary>
     /// Gets the registered telemetry output ports.
@@ -29,10 +27,6 @@ public sealed class Telemetry : IDestroyable
     /// </summary>
     public readonly ReadonlyEvent<Message> OnSend;
 
-    #endregion
-
-    #region Constructors
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Telemetry"/> class.
     /// </summary>
@@ -41,17 +35,10 @@ public sealed class Telemetry : IDestroyable
     /// </param>
     public Telemetry(IEnumerable<IPort>? ports = null)
     {
-        foreach (var port in ports ?? [])
-        {
-            Ports.Add(port);
-        }
+        foreach (var port in ports ?? []) Ports.Add(port);
 
-        OnSend = onSend.AsReadonly();
+        OnSend = _onSend.AsReadonly();
     }
-
-    #endregion
-
-    #region Message Methods
 
     /// <summary>
     /// Dispatches a telemetry message using the specified content and optional
@@ -100,47 +87,30 @@ public sealed class Telemetry : IDestroyable
     /// </exception>
     public Message Send(Message message)
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Telemetry is destroyed, cannot send messages");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Telemetry is destroyed, cannot send messages");
 
         IPort[] sortedPorts = [.. Ports.OrderByDescending(port => port.Priority)];
 
-        foreach (var port in sortedPorts)
-        {
-            port.Send(message);
-        }
+        foreach (var port in sortedPorts) port.Send(message);
 
-        onSend.Fire(message);
+        _onSend.Fire(message);
 
         return message;
     }
-
-    #endregion
-
-    #region Lifecycle Methods
 
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
         if (Destroyed)
-        {
             throw new DestroyedObjectException(
                 "Telemetry is already destroyed, cannot destroy again"
             );
-        }
 
-        foreach (var port in Ports)
-        {
-            port.Destroy();
-        }
+        foreach (var port in Ports) port.Destroy();
 
         Ports.Destroy();
-        onSend.Destroy();
+        _onSend.Destroy();
 
         Destroyed = true;
     }
-
-    #endregion
 }

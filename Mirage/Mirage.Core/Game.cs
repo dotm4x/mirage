@@ -30,7 +30,7 @@ public enum GameState
     /// <summary>
     /// Indicates that the game is currently stopping.
     /// </summary>
-    Stopping,
+    Stopping
 }
 
 /// <summary>
@@ -47,11 +47,9 @@ public enum GameState
 /// </remarks>
 public abstract class Game : IDestroyable
 {
-    private readonly Dictionary<string, Module> modules = [];
-    private readonly Store<GameState> state = new(GameState.Idle);
-    private IReadOnlyList<Module>? moduleOrder;
-
-    #region Properties
+    private readonly Dictionary<string, Module> _modules = [];
+    private readonly Store<GameState> _state = new(GameState.Idle);
+    private IReadOnlyList<Module>? _moduleOrder;
 
     /// <summary>
     /// Gets the modules registered in the game, indexed by identifier.
@@ -61,7 +59,7 @@ public abstract class Game : IDestroyable
     /// <summary>
     /// Gets the telemetry manager used by the game and its modules.
     /// </summary>
-    public readonly Telemetry.Telemetry Telemetry;
+    protected readonly Telemetry.Telemetry Telemetry;
 
     /// <summary>
     /// Gets a read-only view of the game's current lifecycle state.
@@ -75,16 +73,14 @@ public abstract class Game : IDestroyable
     public double TargetFramerate
     {
         get;
-        set
+        private init
         {
-            if (value < 0 || double.IsNaN(value))
-            {
+            if (value is < 0 or double.NaN)
                 throw new ArgumentOutOfRangeException(
                     nameof(value),
                     value,
                     "Target framerate must be zero or greater."
                 );
-            }
 
             field = value;
         }
@@ -102,10 +98,6 @@ public abstract class Game : IDestroyable
 
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
-
-    #endregion
-
-    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
@@ -133,25 +125,19 @@ public abstract class Game : IDestroyable
         Telemetry.Telemetry? telemetry = null
     )
     {
-        Telemetry = telemetry ?? new();
+        Telemetry = telemetry ?? new Telemetry.Telemetry();
 
         foreach (var module in modules ?? [])
-        {
-            if (!this.modules.TryAdd(module.Identifier, module))
-            {
+            if (!_modules.TryAdd(module.Identifier, module))
                 throw new InvalidOperationException(
                     $"Duplicate module identifier found: '{module.Identifier}'"
                 );
-            }
-        }
 
         TargetFramerate = targetFramerate;
-        State = state.AsReadonly();
+        State = _state.AsReadonly();
 
-        Modules = this.modules;
+        Modules = _modules;
     }
-
-    #endregion
 
     /// <summary>
     /// Gets a registered module of the specified type.
@@ -168,7 +154,7 @@ public abstract class Game : IDestroyable
     protected TModule Require<TModule>()
         where TModule : Module
     {
-        return modules.Values.OfType<TModule>().Single();
+        return _modules.Values.OfType<TModule>().Single();
     }
 
     /// <summary>
@@ -177,7 +163,9 @@ public abstract class Game : IDestroyable
     /// <remarks>
     /// Override this method to perform game-specific startup logic.
     /// </remarks>
-    protected virtual void OnStart() { }
+    protected virtual void OnStart()
+    {
+    }
 
     /// <summary>
     /// Called once for each frame while the game is running.
@@ -188,7 +176,9 @@ public abstract class Game : IDestroyable
     /// <remarks>
     /// Override this method to implement game-specific per-frame logic.
     /// </remarks>
-    protected virtual void OnUpdate(double deltaTime) { }
+    protected virtual void OnUpdate(double deltaTime)
+    {
+    }
 
     /// <summary>
     /// Called when the game has successfully stopped all running modules.
@@ -196,7 +186,9 @@ public abstract class Game : IDestroyable
     /// <remarks>
     /// Override this method to perform game-specific shutdown logic.
     /// </remarks>
-    protected virtual void OnStop() { }
+    protected virtual void OnStop()
+    {
+    }
 
     /// <summary>
     /// Called when the game is destroyed.
@@ -204,7 +196,9 @@ public abstract class Game : IDestroyable
     /// <remarks>
     /// Override this method to release game-specific resources.
     /// </remarks>
-    protected virtual void OnDestroy() { }
+    protected virtual void OnDestroy()
+    {
+    }
 
     /// <summary>
     /// Starts the game, all registered modules, and the main game loop.
@@ -234,40 +228,32 @@ public abstract class Game : IDestroyable
     /// </exception>
     public void Start()
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Game is destroyed, cannot start");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Game is destroyed, cannot start");
 
-        GameState currentState = state.Get();
+        var currentState = _state.Get();
 
         if (currentState != GameState.Idle)
-        {
             throw new InvalidOperationException(
                 $"Game cannot be started from state '{currentState}'"
             );
-        }
 
-        state.Set(GameState.Starting);
+        _state.Set(GameState.Starting);
 
-        Telemetry.Send("Game is starting", "Game", MessageKind.Information);
+        Telemetry.Send("Game is starting", "Game");
 
         List<Module> startedModules = [];
 
         try
         {
-            IReadOnlyList<Module> sortedModules = ResolveModuleOrder();
+            var sortedModules = ResolveModuleOrder();
 
             ModuleContext context = new()
             {
                 Telemetry = Telemetry,
-                Modules = new ModuleContainer(sortedModules),
+                Modules = new ModuleContainer(sortedModules)
             };
 
-            foreach (var module in sortedModules)
-            {
-                module.Inject(context);
-            }
+            foreach (var module in sortedModules) module.Inject(context);
 
             foreach (var module in sortedModules)
             {
@@ -275,18 +261,18 @@ public abstract class Game : IDestroyable
                 startedModules.Add(module);
             }
 
-            moduleOrder = sortedModules;
-            state.Set(GameState.Running);
+            _moduleOrder = sortedModules;
+            _state.Set(GameState.Running);
 
             OnStart();
 
-            Telemetry.Send("Game is now running", "Game", MessageKind.Information);
+            Telemetry.Send("Game is now running", "Game");
         }
         catch (Exception)
         {
             RollbackStartedModules(startedModules);
 
-            state.Set(GameState.Idle);
+            _state.Set(GameState.Idle);
 
             throw;
         }
@@ -307,14 +293,14 @@ public abstract class Game : IDestroyable
     /// </remarks>
     private void RunUpdateLoop()
     {
-        Stopwatch stopwatch = Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
 
-        double previousFrameTime = stopwatch.Elapsed.TotalSeconds;
+        var previousFrameTime = stopwatch.Elapsed.TotalSeconds;
 
-        while (state.Get() == GameState.Running)
+        while (_state.Get() == GameState.Running)
         {
-            double frameDuration = TargetFramerate > 0 ? 1.0 / TargetFramerate : 0;
-            double frameStartTime = stopwatch.Elapsed.TotalSeconds;
+            var frameDuration = TargetFramerate > 0 ? 1.0 / TargetFramerate : 0;
+            var frameStartTime = stopwatch.Elapsed.TotalSeconds;
 
             DeltaTime = frameStartTime - previousFrameTime;
             previousFrameTime = frameStartTime;
@@ -323,14 +309,11 @@ public abstract class Game : IDestroyable
 
             OnUpdate(DeltaTime);
 
-            double elapsedFrameTime = stopwatch.Elapsed.TotalSeconds - frameStartTime;
+            var elapsedFrameTime = stopwatch.Elapsed.TotalSeconds - frameStartTime;
 
-            double remainingFrameTime = frameDuration - elapsedFrameTime;
+            var remainingFrameTime = frameDuration - elapsedFrameTime;
 
-            if (remainingFrameTime > 0)
-            {
-                Thread.Sleep(TimeSpan.FromSeconds(remainingFrameTime));
-            }
+            if (remainingFrameTime > 0) Thread.Sleep(TimeSpan.FromSeconds(remainingFrameTime));
         }
     }
 
@@ -359,47 +342,39 @@ public abstract class Game : IDestroyable
     /// </exception>
     public void Stop()
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Game is destroyed, cannot stop");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Game is destroyed, cannot stop");
 
-        GameState currentState = state.Get();
+        var currentState = _state.Get();
 
         if (currentState != GameState.Running)
-        {
             throw new InvalidOperationException(
                 $"Game cannot be stopped from state '{currentState}'"
             );
-        }
 
-        state.Set(GameState.Stopping);
+        _state.Set(GameState.Stopping);
 
-        Telemetry.Send("Game is stopping", "Game", MessageKind.Information);
+        Telemetry.Send("Game is stopping", "Game");
 
         try
         {
-            IReadOnlyList<Module> sortedModules = moduleOrder ?? ResolveModuleOrder();
+            var sortedModules = _moduleOrder ?? ResolveModuleOrder();
 
-            for (int index = sortedModules.Count - 1; index >= 0; index--)
+            for (var index = sortedModules.Count - 1; index >= 0; index--)
             {
-                Module module = sortedModules[index];
+                var module = sortedModules[index];
 
-                if (module.State.Get() == ModuleState.Running)
-                {
-                    module.Stop();
-                }
+                if (module.State.Get() == ModuleState.Running) module.Stop();
             }
 
             OnStop();
 
-            state.Set(GameState.Idle);
+            _state.Set(GameState.Idle);
 
-            Telemetry.Send("Game is now idle", "Game", MessageKind.Information);
+            Telemetry.Send("Game is now idle", "Game");
         }
         catch (Exception)
         {
-            state.Set(GameState.Running);
+            _state.Set(GameState.Running);
 
             throw;
         }
@@ -411,17 +386,20 @@ public abstract class Game : IDestroyable
     /// <param name="startedModules">
     /// The modules that started successfully before the failure occurred.
     /// </param>
-    private void RollbackStartedModules(IReadOnlyList<Module> startedModules)
+    private static void RollbackStartedModules(IReadOnlyList<Module> startedModules)
     {
-        for (int index = startedModules.Count - 1; index >= 0; index--)
+        for (var index = startedModules.Count - 1; index >= 0; index--)
         {
-            Module module = startedModules[index];
+            var module = startedModules[index];
 
             try
             {
                 module.Stop();
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
     }
 
@@ -439,42 +417,39 @@ public abstract class Game : IDestroyable
     {
         Dictionary<string, Module> modulesByIdentifier = [];
 
-        foreach (var module in modules.Values)
-        {
-            modulesByIdentifier.Add(module.Identifier, module);
-        }
+        foreach (var module in _modules.Values) modulesByIdentifier.Add(module.Identifier, module);
 
         List<Module> sortedModules = [];
         HashSet<string> visiting = [];
         HashSet<string> visited = [];
 
+        foreach (var module in _modules.Values.Where(module => !visited.Contains(module.Identifier)))
+            Resolve(module, []);
+
+        return sortedModules;
+
         void Resolve(Module module, List<string> dependencyPath)
         {
             if (visiting.Contains(module.Identifier))
             {
-                string cyclePath = string.Join(" -> ", [.. dependencyPath, module.Identifier]);
+                var cyclePath = string.Join(" -> ", [.. dependencyPath, module.Identifier]);
 
                 throw new InvalidOperationException(
                     $"Circular dependency detected in modules: {cyclePath}"
                 );
             }
 
-            if (visited.Contains(module.Identifier))
-            {
-                return;
-            }
+            if (visited.Contains(module.Identifier)) return;
 
             visiting.Add(module.Identifier);
             dependencyPath.Add(module.Identifier);
 
             foreach (var dependency in module.Dependencies)
             {
-                if (!modulesByIdentifier.TryGetValue(dependency, out Module? dependencyModule))
-                {
+                if (!modulesByIdentifier.TryGetValue(dependency, out var dependencyModule))
                     throw new InvalidOperationException(
                         $"Module '{module.Identifier}' requires missing dependency '{dependency}'"
                     );
-                }
 
                 Resolve(dependencyModule, dependencyPath);
             }
@@ -485,45 +460,27 @@ public abstract class Game : IDestroyable
             visited.Add(module.Identifier);
             sortedModules.Add(module);
         }
-
-        foreach (var module in modules.Values)
-        {
-            if (!visited.Contains(module.Identifier))
-            {
-                Resolve(module, []);
-            }
-        }
-
-        return sortedModules;
     }
 
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Game is already destroyed, cannot destroy again");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Game is already destroyed, cannot destroy again");
 
-        GameState currentState = state.Get();
+        var currentState = _state.Get();
 
         if (currentState != GameState.Idle)
-        {
             throw new InvalidOperationException(
                 $"Game cannot be destroyed while in state '{currentState}'"
             );
-        }
 
         OnDestroy();
 
-        foreach (var module in modules.Values)
-        {
-            module.Destroy();
-        }
+        foreach (var module in _modules.Values) module.Destroy();
 
-        modules.Clear();
+        _modules.Clear();
 
-        state.Destroy();
+        _state.Destroy();
 
         Destroyed = true;
 

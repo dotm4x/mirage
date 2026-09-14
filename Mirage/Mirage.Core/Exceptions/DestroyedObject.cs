@@ -5,4 +5,4 @@ namespace Mirage.Core.Exceptions;
 /// that has already been destroyed.
 /// </summary>
 /// <param name="message">The message that describes the invalid operation.</param>
-public class DestroyedObjectException(string message) : InvalidOperationException(message) { }
+public class DestroyedObjectException(string message) : InvalidOperationException(message);

@@ -10,7 +10,7 @@ namespace Mirage.Core.Modules;
 /// </summary>
 internal sealed class ModuleContainer(IEnumerable<Module> modules)
 {
-    private readonly IReadOnlyList<Module> modules = [.. modules];
+    private readonly IReadOnlyList<Module> _modules = [.. modules];
 
     /// <summary>
     /// Gets a module by its concrete type.
@@ -20,7 +20,7 @@ internal sealed class ModuleContainer(IEnumerable<Module> modules)
     public TModule Get<TModule>()
         where TModule : Module
     {
-        return modules.OfType<TModule>().Single();
+        return _modules.OfType<TModule>().Single();
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ internal sealed class ModuleContainer(IEnumerable<Module> modules)
     /// <returns>The module with the specified identifier.</returns>
     public Module Get(string identifier)
     {
-        return modules.Single(module => module.Identifier == identifier);
+        return _modules.Single(module => module.Identifier == identifier);
     }
 }
 
@@ -73,7 +73,7 @@ public enum ModuleState
     /// <summary>
     /// Indicates that the module is currently stopping.
     /// </summary>
-    Stopping,
+    Stopping
 }
 
 /// <summary>
@@ -85,11 +85,9 @@ public enum ModuleState
 /// </remarks>
 public abstract class Module : IDestroyable
 {
-    private readonly Store<ModuleState> state = new(ModuleState.Idle);
-    private readonly Dictionary<string, Module> injectedDependencies = [];
-    private bool injected;
-
-    #region Properties
+    private readonly Store<ModuleState> _state = new(ModuleState.Idle);
+    private readonly Dictionary<string, Module> _injectedDependencies = [];
+    private bool _injected;
 
     /// <summary>
     /// Gets the unique module identifier.
@@ -114,10 +112,6 @@ public abstract class Module : IDestroyable
     /// <inheritdoc cref="IDestroyable.Destroyed"/>
     public bool Destroyed { get; private set; }
 
-    #endregion
-
-    #region Constructors
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Module"/> class.
     /// </summary>
@@ -132,12 +126,8 @@ public abstract class Module : IDestroyable
         Identifier = identifier;
         Dependencies = [.. dependencies ?? []];
 
-        State = state.AsReadonly();
+        State = _state.AsReadonly();
     }
-
-    #endregion
-
-    #region Injection Methods
 
     /// <summary>
     /// Injects the shared game context and resolves the module's dependencies.
@@ -150,7 +140,7 @@ public abstract class Module : IDestroyable
     /// </exception>
     internal void Inject(ModuleContext context)
     {
-        if (injected)
+        if (_injected)
         {
             throw new InvalidOperationException(
                 $"Module '{Identifier}' has already been injected."
@@ -161,17 +151,13 @@ public abstract class Module : IDestroyable
 
         foreach (var dependency in Dependencies)
         {
-            injectedDependencies.Add(dependency, context.Modules.Get(dependency));
+            _injectedDependencies.Add(dependency, context.Modules.Get(dependency));
         }
 
-        injected = true;
+        _injected = true;
 
         Telemetry.Send($"Module '{Identifier}' has been injected.", Identifier, MessageKind.Debug);
     }
-
-    #endregion
-
-    #region Dependency Methods
 
     /// <summary>
     /// Gets an injected dependency of the specified type.
@@ -186,12 +172,12 @@ public abstract class Module : IDestroyable
     protected TModule Require<TModule>(string name)
         where TModule : Module
     {
-        if (!injected)
+        if (!_injected)
         {
             throw new InvalidOperationException($"Module '{Identifier}' has not been injected.");
         }
 
-        if (!injectedDependencies.TryGetValue(name, out var module))
+        if (!_injectedDependencies.TryGetValue(name, out var module))
         {
             throw new InvalidOperationException(
                 $"Module '{Identifier}' requires dependency '{name}', but it was not injected."
@@ -207,10 +193,6 @@ public abstract class Module : IDestroyable
 
         return typedModule;
     }
-
-    #endregion
-
-    #region Lifecycle Hooks
 
     /// <summary>
     /// Called when the module starts.
@@ -236,10 +218,6 @@ public abstract class Module : IDestroyable
     /// </remarks>
     protected virtual void OnDestroy() { }
 
-    #endregion
-
-    #region Lifecycle Methods
-
     /// <summary>
     /// Starts the module and transitions it to the running state.
     /// </summary>
@@ -258,14 +236,14 @@ public abstract class Module : IDestroyable
             );
         }
 
-        if (!injected)
+        if (!_injected)
         {
             throw new InvalidOperationException(
                 $"Module '{Identifier}' has not been injected, cannot start."
             );
         }
 
-        ModuleState currentState = state.Get();
+        var currentState = _state.Get();
 
         if (currentState != ModuleState.Idle)
         {
@@ -274,25 +252,24 @@ public abstract class Module : IDestroyable
             );
         }
 
-        state.Set(ModuleState.Starting);
+        _state.Set(ModuleState.Starting);
 
-        Telemetry.Send($"Starting module '{Identifier}'.", Identifier, MessageKind.Information);
+        Telemetry.Send($"Starting module '{Identifier}'.", Identifier);
 
         try
         {
             OnStart();
 
-            state.Set(ModuleState.Running);
+            _state.Set(ModuleState.Running);
 
             Telemetry.Send(
                 $"Module '{Identifier}' started successfully.",
-                Identifier,
-                MessageKind.Information
+                Identifier
             );
         }
         catch (Exception)
         {
-            state.Set(ModuleState.Idle);
+            _state.Set(ModuleState.Idle);
 
             throw;
         }
@@ -314,14 +291,14 @@ public abstract class Module : IDestroyable
             throw new DestroyedObjectException($"Module '{Identifier}' is destroyed, cannot stop.");
         }
 
-        if (!injected)
+        if (!_injected)
         {
             throw new InvalidOperationException(
                 $"Module '{Identifier}' has not been injected, cannot stop."
             );
         }
 
-        ModuleState currentState = state.Get();
+        var currentState = _state.Get();
 
         if (currentState != ModuleState.Running)
         {
@@ -330,25 +307,24 @@ public abstract class Module : IDestroyable
             );
         }
 
-        state.Set(ModuleState.Stopping);
+        _state.Set(ModuleState.Stopping);
 
-        Telemetry.Send($"Stopping module '{Identifier}'.", Identifier, MessageKind.Information);
+        Telemetry.Send($"Stopping module '{Identifier}'.", Identifier);
 
         try
         {
             OnStop();
 
-            state.Set(ModuleState.Idle);
+            _state.Set(ModuleState.Idle);
 
             Telemetry.Send(
                 $"Module '{Identifier}' stopped successfully.",
-                Identifier,
-                MessageKind.Information
+                Identifier
             );
         }
         catch (Exception)
         {
-            state.Set(ModuleState.Running);
+            _state.Set(ModuleState.Running);
 
             throw;
         }
@@ -364,20 +340,20 @@ public abstract class Module : IDestroyable
             );
         }
 
-        if (state.Get() != ModuleState.Idle)
+        if (_state.Get() != ModuleState.Idle)
         {
             throw new InvalidOperationException(
-                $"Module '{Identifier}' cannot be destroyed while in state '{state.Get()}'."
+                $"Module '{Identifier}' cannot be destroyed while in state '{_state.Get()}'."
             );
         }
 
         OnDestroy();
 
-        state.Destroy();
+        _state.Destroy();
 
         Destroyed = true;
 
-        if (injected)
+        if (_injected)
         {
             Telemetry.Send(
                 $"Module '{Identifier}' has been destroyed.",
@@ -386,6 +362,4 @@ public abstract class Module : IDestroyable
             );
         }
     }
-
-    #endregion
 }
