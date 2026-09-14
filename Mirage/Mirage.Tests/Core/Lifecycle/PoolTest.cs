@@ -112,9 +112,7 @@ public class PoolTest
         var second = new TestPoolable();
 
         var pool = new Pool<TestPoolable>(() =>
-            ReferenceEquals(first, second)
-                ? new TestPoolable()
-                : first
+            ReferenceEquals(first, second) ? new TestPoolable() : first
         );
 
         var acquiredFirst = pool.Acquire();
