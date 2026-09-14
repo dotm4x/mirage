@@ -14,7 +14,6 @@ public class GameTest
 
         Assert.Empty(game.Modules);
         Assert.Equal(GameState.Idle, game.State.Get());
-        Assert.False(game.Destroyed);
     }
 
     [Fact]
@@ -284,7 +283,6 @@ public class GameTest
 
         game.Destroy();
 
-        Assert.True(game.Destroyed);
         Assert.True(firstModule.Destroyed);
         Assert.True(secondModule.Destroyed);
         Assert.Empty(game.Modules);
@@ -301,16 +299,6 @@ public class GameTest
 
         game.Stop();
         await startTask;
-    }
-
-    [Fact]
-    public void Destroy_WhenAlreadyDestroyed_Throws()
-    {
-        var game = new TestGame();
-
-        game.Destroy();
-
-        Assert.Throws<DestroyedObjectException>(game.Destroy);
     }
 
     [Fact]

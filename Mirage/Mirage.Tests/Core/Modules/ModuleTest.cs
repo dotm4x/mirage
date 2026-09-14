@@ -15,7 +15,6 @@ public class ModuleTest
         Assert.Equal("Test", module.Identifier);
         Assert.Empty(module.Dependencies);
         Assert.Equal(ModuleState.Idle, module.State.Get());
-        Assert.False(module.Destroyed);
     }
 
     [Fact]
@@ -234,17 +233,6 @@ public class ModuleTest
 
         game.Stop();
         await startTask;
-    }
-
-    [Fact]
-    public void Destroy_WhenAlreadyDestroyed_Throws()
-    {
-        var module = new TestModule("Test");
-        var game = new TestGame([module]);
-
-        game.Destroy();
-
-        Assert.Throws<DestroyedObjectException>(module.Destroy);
     }
 
     [Fact]

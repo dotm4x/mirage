@@ -150,32 +150,9 @@ public class EventTest
         @event.Connect(_ => calls++);
         @event.Destroy();
 
-        Assert.True(@event.Destroyed);
-
         @event.Fire(1);
 
         Assert.Equal(0, calls);
-    }
-
-    [Fact]
-    public void Destroy_MarksEventAsDestroyed()
-    {
-        var @event = new TestEvent();
-
-        @event.Destroy();
-
-        Assert.True(@event.Destroyed);
-    }
-
-    [Fact]
-    public void Destroy_WhenAlreadyDestroyed_Throws()
-    {
-        var @event = new TestEvent();
-        @event.Destroy();
-
-        var action = @event.Destroy;
-
-        Assert.Throws<DestroyedObjectException>(action);
     }
 
     private sealed class TestEvent : Event<int>

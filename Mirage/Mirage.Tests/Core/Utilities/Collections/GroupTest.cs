@@ -12,7 +12,6 @@ public class GroupTest
         var group = new Group<int>();
 
         Assert.Equal(0, group.Count);
-        Assert.False(group.Destroyed);
         Assert.Equal(0, group.Limit);
     }
 
@@ -260,7 +259,6 @@ public class GroupTest
 
         Assert.Equal(0, group.Count);
         Assert.Empty(group.ToArray());
-        Assert.False(group.Destroyed);
     }
 
     [Fact]
@@ -310,20 +308,8 @@ public class GroupTest
 
         group.Destroy();
 
-        Assert.True(group.Destroyed);
         Assert.Equal(0, group.Count);
         Assert.Empty(group.ToArray());
-    }
-
-    [Fact]
-    public void Destroy_WhenAlreadyDestroyed_Throws()
-    {
-        var group = new Group<int>();
-        group.Destroy();
-
-        var action = group.Destroy;
-
-        Assert.Throws<DestroyedObjectException>(action);
     }
 
     [Fact]

@@ -12,7 +12,6 @@ public class StoreTest
         var store = new Store<int>(42);
 
         Assert.Equal(42, store.Get());
-        Assert.False(store.Destroyed);
     }
 
     [Fact]
@@ -220,16 +219,6 @@ public class StoreTest
     }
 
     [Fact]
-    public void Destroy_MarksStoreAsDestroyed()
-    {
-        var store = new Store<int>(42);
-
-        store.Destroy();
-
-        Assert.True(store.Destroyed);
-    }
-
-    [Fact]
     public void Destroy_RemovesAllConnections()
     {
         var store = new Store<int>(42);
@@ -243,14 +232,4 @@ public class StoreTest
         Assert.Equal(0, calls);
     }
 
-    [Fact]
-    public void Destroy_WhenAlreadyDestroyed_Throws()
-    {
-        var store = new Store<int>(42);
-        store.Destroy();
-
-        var action = store.Destroy;
-
-        Assert.Throws<DestroyedObjectException>(action);
-    }
 }

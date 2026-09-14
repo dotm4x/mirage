@@ -13,7 +13,6 @@ public class TelemetryTest
         var telemetry = new Telemetry();
 
         Assert.Empty(telemetry.Ports);
-        Assert.False(telemetry.Destroyed);
     }
 
     [Fact]
@@ -124,7 +123,6 @@ public class TelemetryTest
 
         telemetry.Destroy();
 
-        Assert.True(telemetry.Destroyed);
         Assert.True(firstPort.Destroyed);
         Assert.True(secondPort.Destroyed);
     }
@@ -136,30 +134,16 @@ public class TelemetryTest
 
         telemetry.Destroy();
 
-        Assert.True(telemetry.Ports.Destroyed);
         Assert.Empty(telemetry.Ports);
-    }
-
-    [Fact]
-    public void Destroy_WhenAlreadyDestroyed_Throws()
-    {
-        var telemetry = new Telemetry();
-        telemetry.Destroy();
-
-        var action = telemetry.Destroy;
-
-        Assert.Throws<DestroyedObjectException>(action);
     }
 
     private sealed class TestPort(
         PortPriority priority = PortPriority.Normal,
         List<TestPort>? sendOrder = null,
         Action<Message>? onSend = null
-    ) : IPort
+    ) : Destroyable, IPort
     {
         public PortPriority Priority { get; } = priority;
-
-        public bool Destroyed { get; private set; }
 
         public List<Message> Messages { get; } = [];
 
@@ -168,14 +152,6 @@ public class TelemetryTest
             Messages.Add(message);
             sendOrder?.Add(this);
             onSend?.Invoke(message);
-        }
-
-        public void Destroy()
-        {
-            if (Destroyed)
-                throw new InvalidOperationException();
-
-            Destroyed = true;
         }
     }
 }

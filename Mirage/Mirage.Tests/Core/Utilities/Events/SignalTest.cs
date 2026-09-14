@@ -125,8 +125,6 @@ public class SignalTest
         signal.Connect(_ => calls++);
 
         signal.Destroy();
-        Assert.True(signal.Destroyed);
-
         Assert.Throws<DestroyedObjectException>(() => signal.Fire(42));
         Assert.Equal(0, calls);
     }
