@@ -14,18 +14,11 @@ internal class MyModule() : Module("MyModule")
     }
 }
 
-internal class MyGame()
-    : Game(
-        [new MyModule()],
-        0,
-        new Telemetry([new ConsolePort()])
-    )
+internal class MyGame() : Game([new MyModule()], 0, new Telemetry([new ConsolePort()]))
 {
     private MyModule MyModule => Require<MyModule>();
 
-    protected override void OnStart()
-    {
-    }
+    protected override void OnStart() { }
 
     protected override void OnUpdate(double deltaTime)
     {

@@ -18,7 +18,7 @@ public enum MessageKind
     /// <summary>
     /// Indicates a warning about a potentially problematic situation.
     /// </summary>
-    Warn
+    Warn,
 }
 
 /// <summary>
