@@ -66,8 +66,6 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
     /// </exception>
     public TValue Get()
     {
-        ThrowIfDestroyed();
-
         return _value;
     }
 
