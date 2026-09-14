@@ -106,7 +106,7 @@ public abstract class Module : Destroyable
     /// <summary>
     /// Gets a read-only store for the current lifecycle state of the module.
     /// </summary>
-    public ReadonlyStore<ModuleState> State { get; }
+    public IReadOnlyStore<ModuleState> State { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Module"/> class.
@@ -122,7 +122,7 @@ public abstract class Module : Destroyable
         Identifier = identifier;
         Dependencies = [.. dependencies ?? []];
 
-        State = _state.AsReadonly();
+        State = _state;
     }
 
     /// <summary>
@@ -305,3 +305,4 @@ public abstract class Module : Destroyable
             );
     }
 }
+

@@ -63,7 +63,7 @@ public abstract class Game : Destroyable
     /// <summary>
     /// Gets a read-only view of the game's current lifecycle state.
     /// </summary>
-    public readonly ReadonlyStore<GameState> State;
+    public IReadOnlyStore<GameState> State { get; }
 
     /// <summary>
     /// Gets or sets the target number of frames the game attempts to process
@@ -130,9 +130,9 @@ public abstract class Game : Destroyable
                 );
 
         TargetFramerate = targetFramerate;
-        State = _state.AsReadonly();
-
-        Modules = _modules;
+        
+        Modules = _modules.AsReadOnly();
+        State = _state;
     }
 
     /// <summary>
