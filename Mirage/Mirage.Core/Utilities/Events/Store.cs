@@ -1,20 +1,30 @@
+using Mirage.Core.Lifecycle;
+
 namespace Mirage.Core.Utilities.Events;
 
 /// <summary>
-/// Provides read-only access to a <see cref="Store{TValue}"/>.
+/// Provides read-only access to a store.
 /// </summary>
 /// <typeparam name="TValue">The type of the stored value.</typeparam>
-public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> get)
+public interface IReadOnlyStore<TValue> : IReadOnlyEvent<TValue>
 {
     /// <summary>
-    /// Gets the current value of the store without allowing mutation.
+    /// Gets the current value of the store.
     /// </summary>
-    public Func<TValue> Get { get; } = get;
+    TValue Get();
+}
 
+/// <summary>
+/// Provides full access to a store, including value mutation.
+/// </summary>
+/// <typeparam name="TValue">The type of the stored value.</typeparam>
+public interface IStore<TValue> : IReadOnlyStore<TValue>, IEvent<TValue>
+{
     /// <summary>
-    /// Gets the event interface used to subscribe to changes in the store.
+    /// Updates the store's value and notifies listeners if the value has changed.
     /// </summary>
-    public ReadonlyEvent<TValue> Event { get; } = @event;
+    /// <param name="value">The new value to set.</param>
+    void Set(TValue value);
 }
 
 /// <summary>
@@ -41,26 +51,24 @@ public class ReadonlyStore<TValue>(ReadonlyEvent<TValue> @event, Func<TValue> ge
 /// <param name="equals">
 /// An optional function used to determine whether two values are equal.
 /// </param>
-public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = null) : Event<TValue>
+public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = null)
+    : Event<TValue>,
+        IStore<TValue>
 {
+    private readonly Func<TValue, TValue, bool>? _equals = equals;
     private TValue _value = value;
 
     /// <summary>
     /// Gets the current value of the store.
     /// </summary>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the store has already been destroyed.
+    /// </exception>
     public TValue Get()
     {
-        return _value;
-    }
+        ThrowIfDestroyed();
 
-    /// <summary>
-    /// Creates a read-only view of the store, including access to its current
-    /// value.
-    /// </summary>
-    /// <returns>A <see cref="ReadonlyStore{TValue}"/> view of this store.</returns>
-    public new ReadonlyStore<TValue> AsReadonly()
-    {
-        return new ReadonlyStore<TValue>(base.AsReadonly(), Get);
+        return _value;
     }
 
     /// <summary>
@@ -74,9 +82,9 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
     {
         ThrowIfDestroyed();
 
-        if (equals is not null)
+        if (_equals is not null)
         {
-            if (equals(_value, value))
+            if (_equals(_value, value))
                 return;
         }
         else if (EqualityComparer<TValue>.Default.Equals(_value, value))

@@ -1,3 +1,5 @@
+using Mirage.Core.Lifecycle;
+
 namespace Mirage.Core.Utilities.Events;
 
 /// <summary>
