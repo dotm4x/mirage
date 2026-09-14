@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using Mirage.Core.Lifecycle;
 using Mirage.Core;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Utilities.Events;
 
