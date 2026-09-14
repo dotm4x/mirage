@@ -8,6 +8,78 @@ using Xunit;
 public class EventTest
 {
     [Fact]
+    public void Clear_KeepsPersistentConnections()
+    {
+        var @event = new TestEvent();
+        var calls = 0;
+
+        @event.Connect(_ => calls++, true);
+        @event.Clear();
+
+        @event.Fire(1);
+
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
+    public void Clear_RemovesNonPersistentConnections()
+    {
+        var @event = new TestEvent();
+        var calls = 0;
+
+        @event.Connect(_ => calls++);
+        @event.Clear();
+
+        @event.Fire(1);
+
+        Assert.Equal(0, calls);
+    }
+
+    [Fact]
+    public void Clear_WhenEventIsDestroyed_Throws()
+    {
+        var @event = new TestEvent();
+        @event.Destroy();
+
+        Assert.Throws<DestroyedObjectException>(Action);
+        return;
+
+        void Action()
+        {
+            @event.Clear();
+        }
+    }
+
+    [Fact]
+    public void Clear_WithForce_RemovesPersistentConnections()
+    {
+        var @event = new TestEvent();
+        var calls = 0;
+
+        @event.Connect(_ => calls++, true);
+        @event.Clear(true);
+
+        @event.Fire(1);
+
+        Assert.Equal(0, calls);
+    }
+
+    [Fact]
+    public void Clear_WithForce_WhenEventIsDestroyed_Throws()
+    {
+        var @event = new TestEvent();
+        @event.Destroy();
+
+        Assert.Throws<DestroyedObjectException>(Action);
+        return;
+
+        void Action()
+        {
+            @event.Clear(true);
+        }
+    }
+
+    [Fact]
     public void Connect_WhenEventIsActive_CallsCallbackWhenFired()
     {
         var @event = new TestEvent();
@@ -32,16 +104,6 @@ public class EventTest
     }
 
     [Fact]
-    public void Connect_WithPersistentConnection_MarksConnectionAsPersistent()
-    {
-        var @event = new TestEvent();
-
-        var connection = @event.Connect(_ => { }, true);
-
-        Assert.True(connection.Persistent);
-    }
-
-    [Fact]
     public void Connect_WhenEventIsDestroyed_Throws()
     {
         var @event = new TestEvent();
@@ -57,6 +119,16 @@ public class EventTest
     }
 
     [Fact]
+    public void Connect_WithPersistentConnection_MarksConnectionAsPersistent()
+    {
+        var @event = new TestEvent();
+
+        var connection = @event.Connect(_ => { }, true);
+
+        Assert.True(connection.Persistent);
+    }
+
+    [Fact]
     public void Connection_WhenDisconnected_DoesNotReceiveEvents()
     {
         var @event = new TestEvent();
@@ -68,78 +140,6 @@ public class EventTest
         @event.Fire(1);
 
         Assert.Equal(0, calls);
-    }
-
-    [Fact]
-    public void Clear_RemovesNonPersistentConnections()
-    {
-        var @event = new TestEvent();
-        var calls = 0;
-
-        @event.Connect(_ => calls++);
-        @event.Clear();
-
-        @event.Fire(1);
-
-        Assert.Equal(0, calls);
-    }
-
-    [Fact]
-    public void Clear_KeepsPersistentConnections()
-    {
-        var @event = new TestEvent();
-        var calls = 0;
-
-        @event.Connect(_ => calls++, true);
-        @event.Clear();
-
-        @event.Fire(1);
-
-        Assert.Equal(1, calls);
-    }
-
-    [Fact]
-    public void Clear_WithForce_RemovesPersistentConnections()
-    {
-        var @event = new TestEvent();
-        var calls = 0;
-
-        @event.Connect(_ => calls++, true);
-        @event.Clear(true);
-
-        @event.Fire(1);
-
-        Assert.Equal(0, calls);
-    }
-
-    [Fact]
-    public void Clear_WhenEventIsDestroyed_Throws()
-    {
-        var @event = new TestEvent();
-        @event.Destroy();
-
-        Assert.Throws<DestroyedObjectException>(Action);
-        return;
-
-        void Action()
-        {
-            @event.Clear();
-        }
-    }
-
-    [Fact]
-    public void Clear_WithForce_WhenEventIsDestroyed_Throws()
-    {
-        var @event = new TestEvent();
-        @event.Destroy();
-
-        Assert.Throws<DestroyedObjectException>(Action);
-        return;
-
-        void Action()
-        {
-            @event.Clear(true);
-        }
     }
 
     [Fact]

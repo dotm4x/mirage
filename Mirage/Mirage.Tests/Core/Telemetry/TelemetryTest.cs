@@ -29,17 +29,26 @@ public class TelemetryTest
     }
 
     [Fact]
-    public void Send_WithMessage_SendsMessageToAllPorts()
+    public void Destroy_DestroysAllPortsAndMarksTelemetryAsDestroyed()
     {
         var firstPort = new TestPort();
         var secondPort = new TestPort();
         var telemetry = new Telemetry([firstPort, secondPort]);
-        var message = new Message();
 
-        telemetry.Send(message);
+        telemetry.Destroy();
 
-        Assert.Equal([message], firstPort.Messages);
-        Assert.Equal([message], secondPort.Messages);
+        Assert.True(firstPort.Destroyed);
+        Assert.True(secondPort.Destroyed);
+    }
+
+    [Fact]
+    public void Destroy_DestroysPortsGroup()
+    {
+        var telemetry = new Telemetry([new TestPort()]);
+
+        telemetry.Destroy();
+
+        Assert.Empty(telemetry.Ports);
     }
 
     [Fact]
@@ -67,6 +76,21 @@ public class TelemetryTest
         telemetry.Send(new Message());
 
         Assert.Equal([highPriorityPort, normalPriorityPort, lowPriorityPort], sendOrder);
+    }
+
+    [Fact]
+    public void Send_WhenDestroyed_Throws()
+    {
+        var telemetry = new Telemetry();
+        telemetry.Destroy();
+
+        Assert.Throws<DestroyedObjectException>(Action);
+        return;
+
+        void Action()
+        {
+            telemetry.Send(new Message());
+        }
     }
 
     [Fact]
@@ -100,41 +124,17 @@ public class TelemetryTest
     }
 
     [Fact]
-    public void Send_WhenDestroyed_Throws()
-    {
-        var telemetry = new Telemetry();
-        telemetry.Destroy();
-
-        Assert.Throws<DestroyedObjectException>(Action);
-        return;
-
-        void Action()
-        {
-            telemetry.Send(new Message());
-        }
-    }
-
-    [Fact]
-    public void Destroy_DestroysAllPortsAndMarksTelemetryAsDestroyed()
+    public void Send_WithMessage_SendsMessageToAllPorts()
     {
         var firstPort = new TestPort();
         var secondPort = new TestPort();
         var telemetry = new Telemetry([firstPort, secondPort]);
+        var message = new Message();
 
-        telemetry.Destroy();
+        telemetry.Send(message);
 
-        Assert.True(firstPort.Destroyed);
-        Assert.True(secondPort.Destroyed);
-    }
-
-    [Fact]
-    public void Destroy_DestroysPortsGroup()
-    {
-        var telemetry = new Telemetry([new TestPort()]);
-
-        telemetry.Destroy();
-
-        Assert.Empty(telemetry.Ports);
+        Assert.Equal([message], firstPort.Messages);
+        Assert.Equal([message], secondPort.Messages);
     }
 
     private sealed class TestPort(

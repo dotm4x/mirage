@@ -16,6 +16,20 @@ public class StoreTest
     }
 
     [Fact]
+    public void Destroy_RemovesAllConnections()
+    {
+        var store = new Store<int>(42);
+        var calls = 0;
+
+        store.Connect(_ => calls++);
+
+        store.Destroy();
+
+        Assert.Throws<DestroyedObjectException>(() => store.Set(100));
+        Assert.Equal(0, calls);
+    }
+
+    [Fact]
     public void Get_ReturnsCurrentValue()
     {
         var store = new Store<int>(10);
@@ -26,71 +40,98 @@ public class StoreTest
     }
 
     [Fact]
-    public void Set_WithDifferentValue_UpdatesValue()
+    public void Get_WhenStoreIsDestroyed_ReturnsCurrentValue()
     {
-        var store = new Store<int>(10);
+        var store = new Store<int>(42);
 
-        store.Set(20);
+        store.Destroy();
 
-        Assert.Equal(20, store.Get());
+        Assert.Equal(42, store.Get());
     }
 
     [Fact]
-    public void Set_WithDifferentValue_NotifiesListeners()
+    public void Set_WhenListenerIsDisconnected_DoesNotNotifyListener()
     {
-        var store = new Store<int>(10);
-        var received = 0;
-
-        store.Connect(value => received = value);
-
-        store.Set(20);
-
-        Assert.Equal(20, received);
-    }
-
-    [Fact]
-    public void Set_WithSameValue_DoesNotUpdateOrNotify()
-    {
-        var store = new Store<int>(10);
+        var store = new Store<int>(0);
         var calls = 0;
 
-        store.Connect(_ => calls++);
+        var connection = store.Connect(_ => calls++);
 
-        store.Set(10);
+        connection.Disconnect();
+        store.Set(42);
 
-        Assert.Equal(10, store.Get());
         Assert.Equal(0, calls);
     }
 
     [Fact]
-    public void Set_WithMultipleChanges_NotifiesForEachChange()
+    public void Set_WhenStoreIsDestroyed_Throws()
     {
-        var store = new Store<int>(0);
-        var received = new List<int>();
+        var store = new Store<int>(42);
+        store.Destroy();
 
-        store.Connect(received.Add);
+        Assert.Throws<DestroyedObjectException>(Action);
+        return;
 
-        store.Set(1);
-        store.Set(2);
-        store.Set(3);
-
-        Assert.Equal([1, 2, 3], received);
+        void Action()
+        {
+            store.Set(10);
+        }
     }
 
     [Fact]
-    public void Set_WithSameValueBetweenChanges_DoesNotNotify()
+    public void Set_WhenValueIsReferenceTypeAndDifferentReference_UpdatesValue()
     {
-        var store = new Store<int>(0);
-        var received = new List<int>();
+        var initialValue = new object();
+        var newValue = new object();
+        var store = new Store<object>(initialValue);
 
-        store.Connect(received.Add);
+        store.Set(newValue);
 
-        store.Set(1);
-        store.Set(1);
-        store.Set(2);
-        store.Set(2);
+        Assert.Same(newValue, store.Get());
+    }
 
-        Assert.Equal([1, 2], received);
+    [Fact]
+    public void Set_WhenValueIsReferenceType_UsesDefaultEquality()
+    {
+        var value = new object();
+        var store = new Store<object>(value);
+        var calls = 0;
+
+        store.Connect(_ => calls++);
+
+        store.Set(value);
+
+        Assert.Same(value, store.Get());
+        Assert.Equal(0, calls);
+    }
+
+    [Fact]
+    public void Set_WithCustomEquality_WhenValuesAreDifferent_NotifiesListeners()
+    {
+        var store = new Store<string>(
+            "hello",
+            (current, next) => current.Equals(next, StringComparison.OrdinalIgnoreCase)
+        );
+        var received = string.Empty;
+
+        store.Connect(value => received = value);
+
+        store.Set("world");
+
+        Assert.Equal("world", received);
+    }
+
+    [Fact]
+    public void Set_WithCustomEquality_WhenValuesAreDifferent_UpdatesValue()
+    {
+        var store = new Store<string>(
+            "hello",
+            (current, next) => current.Equals(next, StringComparison.OrdinalIgnoreCase)
+        );
+
+        store.Set("world");
+
+        Assert.Equal("world", store.Get());
     }
 
     [Fact]
@@ -111,98 +152,41 @@ public class StoreTest
     }
 
     [Fact]
-    public void Set_WithCustomEquality_WhenValuesAreDifferent_UpdatesValue()
+    public void Set_WithDifferentValue_NotifiesListeners()
     {
-        var store = new Store<string>(
-            "hello",
-            (current, next) => current.Equals(next, StringComparison.OrdinalIgnoreCase)
-        );
-
-        store.Set("world");
-
-        Assert.Equal("world", store.Get());
-    }
-
-    [Fact]
-    public void Set_WithCustomEquality_WhenValuesAreDifferent_NotifiesListeners()
-    {
-        var store = new Store<string>(
-            "hello",
-            (current, next) => current.Equals(next, StringComparison.OrdinalIgnoreCase)
-        );
-        var received = string.Empty;
+        var store = new Store<int>(10);
+        var received = 0;
 
         store.Connect(value => received = value);
 
-        store.Set("world");
+        store.Set(20);
 
-        Assert.Equal("world", received);
+        Assert.Equal(20, received);
     }
 
     [Fact]
-    public void Set_WhenStoreIsDestroyed_Throws()
+    public void Set_WithDifferentValue_UpdatesValue()
     {
-        var store = new Store<int>(42);
-        store.Destroy();
+        var store = new Store<int>(10);
 
-        Assert.Throws<DestroyedObjectException>(Action);
-        return;
+        store.Set(20);
 
-        void Action()
-        {
-            store.Set(10);
-        }
+        Assert.Equal(20, store.Get());
     }
 
     [Fact]
-    public void Get_WhenStoreIsDestroyed_ReturnsCurrentValue()
-    {
-        var store = new Store<int>(42);
-
-        store.Destroy();
-
-        Assert.Equal(42, store.Get());
-    }
-
-    [Fact]
-    public void Set_WhenValueIsReferenceType_UsesDefaultEquality()
-    {
-        var value = new object();
-        var store = new Store<object>(value);
-        var calls = 0;
-
-        store.Connect(_ => calls++);
-
-        store.Set(value);
-
-        Assert.Same(value, store.Get());
-        Assert.Equal(0, calls);
-    }
-
-    [Fact]
-    public void Set_WhenValueIsReferenceTypeAndDifferentReference_UpdatesValue()
-    {
-        var initialValue = new object();
-        var newValue = new object();
-        var store = new Store<object>(initialValue);
-
-        store.Set(newValue);
-
-        Assert.Same(newValue, store.Get());
-    }
-
-    [Fact]
-    public void Set_WhenListenerIsDisconnected_DoesNotNotifyListener()
+    public void Set_WithMultipleChanges_NotifiesForEachChange()
     {
         var store = new Store<int>(0);
-        var calls = 0;
+        var received = new List<int>();
 
-        var connection = store.Connect(_ => calls++);
+        store.Connect(received.Add);
 
-        connection.Disconnect();
-        store.Set(42);
+        store.Set(1);
+        store.Set(2);
+        store.Set(3);
 
-        Assert.Equal(0, calls);
+        Assert.Equal([1, 2, 3], received);
     }
 
     [Fact]
@@ -220,16 +204,32 @@ public class StoreTest
     }
 
     [Fact]
-    public void Destroy_RemovesAllConnections()
+    public void Set_WithSameValueBetweenChanges_DoesNotNotify()
     {
-        var store = new Store<int>(42);
+        var store = new Store<int>(0);
+        var received = new List<int>();
+
+        store.Connect(received.Add);
+
+        store.Set(1);
+        store.Set(1);
+        store.Set(2);
+        store.Set(2);
+
+        Assert.Equal([1, 2], received);
+    }
+
+    [Fact]
+    public void Set_WithSameValue_DoesNotUpdateOrNotify()
+    {
+        var store = new Store<int>(10);
         var calls = 0;
 
         store.Connect(_ => calls++);
 
-        store.Destroy();
+        store.Set(10);
 
-        Assert.Throws<DestroyedObjectException>(() => store.Set(100));
+        Assert.Equal(10, store.Get());
         Assert.Equal(0, calls);
     }
 }

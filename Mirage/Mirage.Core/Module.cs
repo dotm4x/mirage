@@ -39,14 +39,14 @@
     internal sealed class ModuleContext
     {
         /// <summary>
-        /// Gets the telemetry manager available to the module.
-        /// </summary>
-        public required Telemetry.Telemetry Telemetry { get; init; }
-
-        /// <summary>
         /// Gets the collection of modules available for dependency resolution.
         /// </summary>
         public required ModuleContainer Modules { get; init; }
+
+        /// <summary>
+        /// Gets the telemetry manager available to the module.
+        /// </summary>
+        public required Telemetry.Telemetry Telemetry { get; init; }
     }
 
     /// <summary>
@@ -84,6 +84,10 @@
     /// </remarks>
     public abstract class Module : Destroyable
     {
+        private readonly Dictionary<string, Module> _injectedDependencies = [];
+        private readonly Store<ModuleState> _state = new(ModuleState.Idle);
+        private bool _injected;
+
         /// <summary>
         /// Gets the identifiers of the modules required by this module.
         /// </summary>
@@ -93,10 +97,6 @@
         /// Gets the unique module identifier.
         /// </summary>
         public readonly string Identifier;
-
-        private readonly Dictionary<string, Module> _injectedDependencies = [];
-        private readonly Store<ModuleState> _state = new(ModuleState.Idle);
-        private bool _injected;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Module"/> class.
@@ -125,33 +125,39 @@
         /// </summary>
         public IReadOnlyStore<ModuleState> State { get; }
 
-        /// <summary>
-        /// Injects the shared game context and resolves the module's dependencies.
-        /// </summary>
-        /// <param name="context">
-        /// The context containing telemetry and registered modules.
-        /// </param>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when the module has already been injected.
-        /// </exception>
-        internal void Inject(ModuleContext context)
+        /// <inheritdoc cref="IDestroyable.Destroy"/>
+        protected override void OnDestroy()
         {
-            ThrowIfDestroyed();
-
-            if (_injected)
+            if (_state.Get() != ModuleState.Idle)
                 throw new InvalidOperationException(
-                    $"Module '{Identifier}' has already been injected."
+                    $"Module '{Identifier}' cannot be destroyed while in state '{_state.Get()}'."
                 );
 
-            Telemetry = context.Telemetry;
+            _state.Destroy();
 
-            foreach (var dependency in Dependencies)
-                _injectedDependencies.Add(dependency, context.Modules.Get(dependency));
-
-            _injected = true;
-
-            Telemetry.Send($"Module '{Identifier}' has been injected.", Identifier, MessageKind.Debug);
+            if (_injected)
+                Telemetry.Send(
+                    $"Module '{Identifier}' has been destroyed.",
+                    Identifier,
+                    MessageKind.Debug
+                );
         }
+
+        /// <summary>
+        /// Called when the module starts.
+        /// </summary>
+        /// <remarks>
+        /// Override this method to perform module-specific startup logic.
+        /// </remarks>
+        protected virtual void OnStart() { }
+
+        /// <summary>
+        /// Called when the module stops.
+        /// </summary>
+        /// <remarks>
+        /// Override this method to perform module-specific shutdown logic.
+        /// </remarks>
+        protected virtual void OnStop() { }
 
         /// <summary>
         /// Gets an injected dependency of the specified type.
@@ -182,20 +188,32 @@
         }
 
         /// <summary>
-        /// Called when the module starts.
+        /// Injects the shared game context and resolves the module's dependencies.
         /// </summary>
-        /// <remarks>
-        /// Override this method to perform module-specific startup logic.
-        /// </remarks>
-        protected virtual void OnStart() { }
+        /// <param name="context">
+        /// The context containing telemetry and registered modules.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the module has already been injected.
+        /// </exception>
+        internal void Inject(ModuleContext context)
+        {
+            ThrowIfDestroyed();
 
-        /// <summary>
-        /// Called when the module stops.
-        /// </summary>
-        /// <remarks>
-        /// Override this method to perform module-specific shutdown logic.
-        /// </remarks>
-        protected virtual void OnStop() { }
+            if (_injected)
+                throw new InvalidOperationException(
+                    $"Module '{Identifier}' has already been injected."
+                );
+
+            Telemetry = context.Telemetry;
+
+            foreach (var dependency in Dependencies)
+                _injectedDependencies.Add(dependency, context.Modules.Get(dependency));
+
+            _injected = true;
+
+            Telemetry.Send($"Module '{Identifier}' has been injected.", Identifier, MessageKind.Debug);
+        }
 
         /// <summary>
         /// Starts the module and transitions it to the running state.
@@ -285,23 +303,5 @@
 
                 throw;
             }
-        }
-
-        /// <inheritdoc cref="IDestroyable.Destroy"/>
-        protected override void OnDestroy()
-        {
-            if (_state.Get() != ModuleState.Idle)
-                throw new InvalidOperationException(
-                    $"Module '{Identifier}' cannot be destroyed while in state '{_state.Get()}'."
-                );
-
-            _state.Destroy();
-
-            if (_injected)
-                Telemetry.Send(
-                    $"Module '{Identifier}' has been destroyed.",
-                    Identifier,
-                    MessageKind.Debug
-                );
         }
     }

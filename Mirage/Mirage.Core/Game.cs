@@ -45,14 +45,14 @@ public enum GameState
 /// </remarks>
 public abstract class Game : Destroyable
 {
+    private readonly Dictionary<string, Module> _modules = [];
+    private readonly Store<GameState> _state = new(GameState.Idle);
+    private IReadOnlyList<Module>? _moduleOrder;
+
     /// <summary>
     /// Gets the telemetry manager used by the game and its modules.
     /// </summary>
     protected readonly Telemetry.Telemetry Telemetry;
-
-    private readonly Dictionary<string, Module> _modules = [];
-    private readonly Store<GameState> _state = new(GameState.Idle);
-    private IReadOnlyList<Module>? _moduleOrder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
@@ -95,6 +95,16 @@ public abstract class Game : Destroyable
     }
 
     /// <summary>
+    /// Gets the amount of time elapsed since the previous frame, in seconds.
+    /// </summary>
+    public double DeltaTime { get; private set; }
+
+    /// <summary>
+    /// Gets the current measured framerate of the game.
+    /// </summary>
+    public double Framerate { get; private set; }
+
+    /// <summary>
     /// Gets the modules registered in the game, indexed by identifier.
     /// </summary>
     public IReadOnlyDictionary<string, Module> Modules { get; }
@@ -125,14 +135,177 @@ public abstract class Game : Destroyable
     }
 
     /// <summary>
-    /// Gets the current measured framerate of the game.
+    /// Resolves the module startup order using their declared dependencies.
     /// </summary>
-    public double Framerate { get; private set; }
+    /// <returns>
+    /// The modules ordered so that each module appears after its dependencies.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when a required dependency is missing or a circular dependency
+    /// is detected.
+    /// </exception>
+    private IReadOnlyList<Module> ResolveModuleOrder()
+    {
+        Dictionary<string, Module> modulesByIdentifier = [];
+
+        foreach (var module in _modules.Values)
+            modulesByIdentifier.Add(module.Identifier, module);
+
+        List<Module> sortedModules = [];
+        HashSet<string> visiting = [];
+        HashSet<string> visited = [];
+
+        foreach (
+            var module in _modules.Values.Where(module => !visited.Contains(module.Identifier))
+        )
+            Resolve(module, []);
+
+        return sortedModules;
+
+        void Resolve(Module module, List<string> dependencyPath)
+        {
+            if (visiting.Contains(module.Identifier))
+            {
+                var cyclePath = string.Join(" -> ", [.. dependencyPath, module.Identifier]);
+
+                throw new InvalidOperationException(
+                    $"Circular dependency detected in modules: {cyclePath}"
+                );
+            }
+
+            if (visited.Contains(module.Identifier))
+                return;
+
+            visiting.Add(module.Identifier);
+            dependencyPath.Add(module.Identifier);
+
+            foreach (var dependency in module.Dependencies)
+            {
+                if (!modulesByIdentifier.TryGetValue(dependency, out var dependencyModule))
+                    throw new InvalidOperationException(
+                        $"Module '{module.Identifier}' requires missing dependency '{dependency}'"
+                    );
+
+                Resolve(dependencyModule, dependencyPath);
+            }
+
+            dependencyPath.RemoveAt(dependencyPath.Count - 1);
+
+            visiting.Remove(module.Identifier);
+            visited.Add(module.Identifier);
+            sortedModules.Add(module);
+        }
+    }
 
     /// <summary>
-    /// Gets the amount of time elapsed since the previous frame, in seconds.
+    /// Stops the modules that started successfully before a startup failure.
     /// </summary>
-    public double DeltaTime { get; private set; }
+    /// <param name="startedModules">
+    /// The modules that started successfully before the failure occurred.
+    /// </param>
+    private static void RollbackStartedModules(IReadOnlyList<Module> startedModules)
+    {
+        for (var index = startedModules.Count - 1; index >= 0; index--)
+        {
+            var module = startedModules[index];
+
+            try
+            {
+                module.Stop();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+    }
+
+    /// <summary>
+    /// Runs the main game update loop.
+    /// </summary>
+    /// <remarks>
+    /// The loop measures the elapsed time between frames, invokes
+    /// <see cref="OnUpdate(double)"/>, and waits for the remaining frame time
+    /// required to approach <see cref="TargetFramerate"/>.
+    ///
+    /// The loop ends when the game state is no longer
+    /// <see cref="GameState.Running"/>.
+    /// </remarks>
+    private void RunUpdateLoop()
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        var previousFrameTime = stopwatch.Elapsed.TotalSeconds;
+
+        while (_state.Get() == GameState.Running)
+        {
+            var frameDuration = TargetFramerate > 0 ? 1.0 / TargetFramerate : 0;
+            var frameStartTime = stopwatch.Elapsed.TotalSeconds;
+
+            DeltaTime = frameStartTime - previousFrameTime;
+            previousFrameTime = frameStartTime;
+
+            Framerate = DeltaTime > 0 ? 1.0 / DeltaTime : TargetFramerate;
+
+            OnUpdate(DeltaTime);
+
+            var elapsedFrameTime = stopwatch.Elapsed.TotalSeconds - frameStartTime;
+
+            var remainingFrameTime = frameDuration - elapsedFrameTime;
+
+            if (remainingFrameTime > 0)
+                Thread.Sleep(TimeSpan.FromSeconds(remainingFrameTime));
+        }
+    }
+
+    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    protected override void OnDestroy()
+    {
+        var currentState = _state.Get();
+
+        if (currentState != GameState.Idle)
+            throw new InvalidOperationException(
+                $"Game cannot be destroyed while in state '{currentState}'"
+            );
+
+        foreach (var module in _modules.Values)
+            module.Destroy();
+
+        _modules.Clear();
+
+        _state.Destroy();
+
+        Telemetry.Send("Game has been destroyed", "Game", MessageKind.Debug);
+
+        Telemetry.Destroy();
+    }
+
+    /// <summary>
+    /// Called when the game has successfully started all modules.
+    /// </summary>
+    /// <remarks>
+    /// Override this method to perform game-specific startup logic.
+    /// </remarks>
+    protected virtual void OnStart() { }
+
+    /// <summary>
+    /// Called when the game has successfully stopped all running modules.
+    /// </summary>
+    /// <remarks>
+    /// Override this method to perform game-specific shutdown logic.
+    /// </remarks>
+    protected virtual void OnStop() { }
+
+    /// <summary>
+    /// Called once for each frame while the game is running.
+    /// </summary>
+    /// <param name="deltaTime">
+    /// The amount of time elapsed since the previous frame, in seconds.
+    /// </param>
+    /// <remarks>
+    /// Override this method to implement game-specific per-frame logic.
+    /// </remarks>
+    protected virtual void OnUpdate(double deltaTime) { }
 
     /// <summary>
     /// Gets a registered module of the specified type.
@@ -151,33 +324,6 @@ public abstract class Game : Destroyable
     {
         return _modules.Values.OfType<TModule>().Single();
     }
-
-    /// <summary>
-    /// Called when the game has successfully started all modules.
-    /// </summary>
-    /// <remarks>
-    /// Override this method to perform game-specific startup logic.
-    /// </remarks>
-    protected virtual void OnStart() { }
-
-    /// <summary>
-    /// Called once for each frame while the game is running.
-    /// </summary>
-    /// <param name="deltaTime">
-    /// The amount of time elapsed since the previous frame, in seconds.
-    /// </param>
-    /// <remarks>
-    /// Override this method to implement game-specific per-frame logic.
-    /// </remarks>
-    protected virtual void OnUpdate(double deltaTime) { }
-
-    /// <summary>
-    /// Called when the game has successfully stopped all running modules.
-    /// </summary>
-    /// <remarks>
-    /// Override this method to perform game-specific shutdown logic.
-    /// </remarks>
-    protected virtual void OnStop() { }
 
     /// <summary>
     /// Starts the game, all registered modules, and the main game loop.
@@ -261,44 +407,6 @@ public abstract class Game : Destroyable
     }
 
     /// <summary>
-    /// Runs the main game update loop.
-    /// </summary>
-    /// <remarks>
-    /// The loop measures the elapsed time between frames, invokes
-    /// <see cref="OnUpdate(double)"/>, and waits for the remaining frame time
-    /// required to approach <see cref="TargetFramerate"/>.
-    ///
-    /// The loop ends when the game state is no longer
-    /// <see cref="GameState.Running"/>.
-    /// </remarks>
-    private void RunUpdateLoop()
-    {
-        var stopwatch = Stopwatch.StartNew();
-
-        var previousFrameTime = stopwatch.Elapsed.TotalSeconds;
-
-        while (_state.Get() == GameState.Running)
-        {
-            var frameDuration = TargetFramerate > 0 ? 1.0 / TargetFramerate : 0;
-            var frameStartTime = stopwatch.Elapsed.TotalSeconds;
-
-            DeltaTime = frameStartTime - previousFrameTime;
-            previousFrameTime = frameStartTime;
-
-            Framerate = DeltaTime > 0 ? 1.0 / DeltaTime : TargetFramerate;
-
-            OnUpdate(DeltaTime);
-
-            var elapsedFrameTime = stopwatch.Elapsed.TotalSeconds - frameStartTime;
-
-            var remainingFrameTime = frameDuration - elapsedFrameTime;
-
-            if (remainingFrameTime > 0)
-                Thread.Sleep(TimeSpan.FromSeconds(remainingFrameTime));
-        }
-    }
-
-    /// <summary>
     /// Stops the game and all running modules in reverse dependency order.
     /// </summary>
     /// <remarks>
@@ -360,113 +468,5 @@ public abstract class Game : Destroyable
 
             throw;
         }
-    }
-
-    /// <summary>
-    /// Stops the modules that started successfully before a startup failure.
-    /// </summary>
-    /// <param name="startedModules">
-    /// The modules that started successfully before the failure occurred.
-    /// </param>
-    private static void RollbackStartedModules(IReadOnlyList<Module> startedModules)
-    {
-        for (var index = startedModules.Count - 1; index >= 0; index--)
-        {
-            var module = startedModules[index];
-
-            try
-            {
-                module.Stop();
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
-    }
-
-    /// <summary>
-    /// Resolves the module startup order using their declared dependencies.
-    /// </summary>
-    /// <returns>
-    /// The modules ordered so that each module appears after its dependencies.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when a required dependency is missing or a circular dependency
-    /// is detected.
-    /// </exception>
-    private IReadOnlyList<Module> ResolveModuleOrder()
-    {
-        Dictionary<string, Module> modulesByIdentifier = [];
-
-        foreach (var module in _modules.Values)
-            modulesByIdentifier.Add(module.Identifier, module);
-
-        List<Module> sortedModules = [];
-        HashSet<string> visiting = [];
-        HashSet<string> visited = [];
-
-        foreach (
-            var module in _modules.Values.Where(module => !visited.Contains(module.Identifier))
-        )
-            Resolve(module, []);
-
-        return sortedModules;
-
-        void Resolve(Module module, List<string> dependencyPath)
-        {
-            if (visiting.Contains(module.Identifier))
-            {
-                var cyclePath = string.Join(" -> ", [.. dependencyPath, module.Identifier]);
-
-                throw new InvalidOperationException(
-                    $"Circular dependency detected in modules: {cyclePath}"
-                );
-            }
-
-            if (visited.Contains(module.Identifier))
-                return;
-
-            visiting.Add(module.Identifier);
-            dependencyPath.Add(module.Identifier);
-
-            foreach (var dependency in module.Dependencies)
-            {
-                if (!modulesByIdentifier.TryGetValue(dependency, out var dependencyModule))
-                    throw new InvalidOperationException(
-                        $"Module '{module.Identifier}' requires missing dependency '{dependency}'"
-                    );
-
-                Resolve(dependencyModule, dependencyPath);
-            }
-
-            dependencyPath.RemoveAt(dependencyPath.Count - 1);
-
-            visiting.Remove(module.Identifier);
-            visited.Add(module.Identifier);
-            sortedModules.Add(module);
-        }
-    }
-
-    /// <inheritdoc cref="Destroyable.OnDestroy"/>
-    protected override void OnDestroy()
-    {
-        var currentState = _state.Get();
-
-        if (currentState != GameState.Idle)
-            throw new InvalidOperationException(
-                $"Game cannot be destroyed while in state '{currentState}'"
-            );
-
-        foreach (var module in _modules.Values)
-            module.Destroy();
-
-        _modules.Clear();
-
-        _state.Destroy();
-
-        Telemetry.Send("Game has been destroyed", "Game", MessageKind.Debug);
-
-        Telemetry.Destroy();
     }
 }

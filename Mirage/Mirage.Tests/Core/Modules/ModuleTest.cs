@@ -6,6 +6,17 @@ using Xunit;
 
 public class ModuleTest
 {
+    private static Task StartGame(TestGame game)
+    {
+        var startTask = Task.Run(game.Start);
+
+        Assert.True(
+            SpinWait.SpinUntil(() => game.State.Get() == GameState.Running, TimeSpan.FromSeconds(1))
+        );
+
+        return startTask;
+    }
+
     [Fact]
     public void Constructor_CreatesModuleWithIdleState()
     {
@@ -25,17 +36,103 @@ public class ModuleTest
     }
 
     [Fact]
-    public async Task Start_WhenModuleIsInjected_StartsModule()
+    public void Destroy_WhenModuleIsIdle_CallsOnDestroy()
+    {
+        var destroyed = false;
+
+        var module = new TestModule("Test", onDestroy: () => destroyed = true);
+
+        var game = new TestGame([module]);
+
+        game.Destroy();
+
+        Assert.True(destroyed);
+    }
+
+    [Fact]
+    public void Destroy_WhenModuleIsIdle_DestroysModule()
+    {
+        var module = new TestModule("Test");
+        var game = new TestGame([module]);
+
+        game.Destroy();
+
+        Assert.True(module.Destroyed);
+    }
+
+    [Fact]
+    public async Task Destroy_WhenModuleIsRunning_Throws()
     {
         var module = new TestModule("Test");
         var game = new TestGame([module]);
 
         var startTask = StartGame(game);
 
-        Assert.Equal(ModuleState.Running, module.State.Get());
+        Assert.Throws<InvalidOperationException>(game.Destroy);
 
         game.Stop();
         await startTask;
+    }
+
+    [Fact]
+    public void Require_WhenDependencyDoesNotExist_Throws()
+    {
+        var module = new TestModule("Test", ["Missing"]);
+        var game = new TestGame([module]);
+
+        Assert.Throws<InvalidOperationException>(game.Start);
+    }
+
+    [Fact]
+    public async Task Require_WhenDependencyExists_ReturnsDependency()
+    {
+        var dependency = new TestDependencyModule("Dependency");
+        var module = new TestModule("Test", ["Dependency"]);
+
+        var game = new TestGame([module, dependency]);
+
+        var startTask = StartGame(game);
+
+        Assert.Same(dependency, module.GetDependency());
+
+        game.Stop();
+        await startTask;
+    }
+
+    [Fact]
+    public async Task Require_WhenDependencyHasWrongType_Throws()
+    {
+        var dependency = new TestOtherModule("Dependency");
+        var module = new TestModule("Test", ["Dependency"]);
+
+        var game = new TestGame([module, dependency]);
+
+        var startTask = StartGame(game);
+
+        Assert.Throws<InvalidOperationException>(module.GetDependency);
+
+        game.Stop();
+        await startTask;
+    }
+
+    [Fact]
+    public void Require_WhenModuleIsNotInjected_Throws()
+    {
+        var module = new TestModule("Test", ["Dependency"]);
+
+        Assert.Throws<InvalidOperationException>(module.GetDependency);
+    }
+
+    [Fact]
+    public void Start_WhenModuleIsDestroyed_Throws()
+    {
+        var module = new TestModule("Test");
+
+        module.Destroy();
+
+        var game = new TestGame([module]);
+
+        Assert.Throws<DestroyedObjectException>(game.Start);
     }
 
     [Fact]
@@ -50,6 +147,20 @@ public class ModuleTest
         var startTask = StartGame(game);
 
         Assert.True(started);
+
+        game.Stop();
+        await startTask;
+    }
+
+    [Fact]
+    public async Task Start_WhenModuleIsInjected_StartsModule()
+    {
+        var module = new TestModule("Test");
+        var game = new TestGame([module]);
+
+        var startTask = StartGame(game);
+
+        Assert.Equal(ModuleState.Running, module.State.Get());
 
         game.Stop();
         await startTask;
@@ -85,16 +196,11 @@ public class ModuleTest
     }
 
     [Fact]
-    public async Task Stop_WhenModuleIsRunning_StopsModule()
+    public void Stop_WhenModuleIsIdle_Throws()
     {
-        var module = new TestModule("Test");
-        var game = new TestGame([module]);
+        var game = new TestGame();
 
-        var startTask = StartGame(game);
-        game.Stop();
-        await startTask;
-
-        Assert.Equal(ModuleState.Idle, module.State.Get());
+        Assert.Throws<InvalidOperationException>(game.Stop);
     }
 
     [Fact]
@@ -114,11 +220,16 @@ public class ModuleTest
     }
 
     [Fact]
-    public void Stop_WhenModuleIsIdle_Throws()
+    public async Task Stop_WhenModuleIsRunning_StopsModule()
     {
-        var game = new TestGame();
+        var module = new TestModule("Test");
+        var game = new TestGame([module]);
 
-        Assert.Throws<InvalidOperationException>(game.Stop);
+        var startTask = StartGame(game);
+        game.Stop();
+        await startTask;
+
+        Assert.Equal(ModuleState.Idle, module.State.Get());
     }
 
     [Fact]
@@ -146,116 +257,7 @@ public class ModuleTest
         await startTask;
     }
 
-    [Fact]
-    public async Task Require_WhenDependencyExists_ReturnsDependency()
-    {
-        var dependency = new TestDependencyModule("Dependency");
-        var module = new TestModule("Test", ["Dependency"]);
-
-        var game = new TestGame([module, dependency]);
-
-        var startTask = StartGame(game);
-
-        Assert.Same(dependency, module.GetDependency());
-
-        game.Stop();
-        await startTask;
-    }
-
-    [Fact]
-    public void Require_WhenDependencyDoesNotExist_Throws()
-    {
-        var module = new TestModule("Test", ["Missing"]);
-        var game = new TestGame([module]);
-
-        Assert.Throws<InvalidOperationException>(game.Start);
-    }
-
-    [Fact]
-    public async Task Require_WhenDependencyHasWrongType_Throws()
-    {
-        var dependency = new TestOtherModule("Dependency");
-        var module = new TestModule("Test", ["Dependency"]);
-
-        var game = new TestGame([module, dependency]);
-
-        var startTask = StartGame(game);
-
-        Assert.Throws<InvalidOperationException>(module.GetDependency);
-
-        game.Stop();
-        await startTask;
-    }
-
-    [Fact]
-    public void Require_WhenModuleIsNotInjected_Throws()
-    {
-        var module = new TestModule("Test", ["Dependency"]);
-
-        Assert.Throws<InvalidOperationException>(module.GetDependency);
-    }
-
-    [Fact]
-    public void Destroy_WhenModuleIsIdle_DestroysModule()
-    {
-        var module = new TestModule("Test");
-        var game = new TestGame([module]);
-
-        game.Destroy();
-
-        Assert.True(module.Destroyed);
-    }
-
-    [Fact]
-    public void Destroy_WhenModuleIsIdle_CallsOnDestroy()
-    {
-        var destroyed = false;
-
-        var module = new TestModule("Test", onDestroy: () => destroyed = true);
-
-        var game = new TestGame([module]);
-
-        game.Destroy();
-
-        Assert.True(destroyed);
-    }
-
-    [Fact]
-    public async Task Destroy_WhenModuleIsRunning_Throws()
-    {
-        var module = new TestModule("Test");
-        var game = new TestGame([module]);
-
-        var startTask = StartGame(game);
-
-        Assert.Throws<InvalidOperationException>(game.Destroy);
-
-        game.Stop();
-        await startTask;
-    }
-
-    [Fact]
-    public void Start_WhenModuleIsDestroyed_Throws()
-    {
-        var module = new TestModule("Test");
-
-        module.Destroy();
-
-        var game = new TestGame([module]);
-
-        Assert.Throws<DestroyedObjectException>(game.Start);
-    }
-
-    private static Task StartGame(TestGame game)
-    {
-        var startTask = Task.Run(game.Start);
-
-        Assert.True(
-            SpinWait.SpinUntil(() => game.State.Get() == GameState.Running, TimeSpan.FromSeconds(1))
-        );
-
-        return startTask;
-    }
+    private sealed class TestDependencyModule(string identifier) : Module(identifier);
 
     private sealed class TestGame(IEnumerable<Module>? modules = null) : Game(modules ?? []);
 
@@ -267,6 +269,11 @@ public class ModuleTest
         Action? onDestroy = null
     ) : Module(identifier, dependencies)
     {
+        protected override void OnDestroy()
+        {
+            onDestroy?.Invoke();
+        }
+
         protected override void OnStart()
         {
             onStart?.Invoke();
@@ -277,18 +284,11 @@ public class ModuleTest
             onStop?.Invoke();
         }
 
-        protected override void OnDestroy()
-        {
-            onDestroy?.Invoke();
-        }
-
         public TestDependencyModule GetDependency()
         {
             return Require<TestDependencyModule>("Dependency");
         }
     }
-
-    private sealed class TestDependencyModule(string identifier) : Module(identifier);
 
     private sealed class TestOtherModule(string identifier) : Module(identifier);
 }

@@ -18,14 +18,14 @@ public class EventConnection<TPayload>(
     public Action<TPayload> Callback { get; } = callback;
 
     /// <summary>
-    /// Gets a value indicating whether the connection persists after being cleared.
-    /// </summary>
-    public bool Persistent { get; } = persistent;
-
-    /// <summary>
     /// Disconnects the callback from the event.
     /// </summary>
     public Action Disconnect { get; } = disconnect;
+
+    /// <summary>
+    /// Gets a value indicating whether the connection persists after being cleared.
+    /// </summary>
+    public bool Persistent { get; } = persistent;
 }
 
 /// <summary>
@@ -72,6 +72,28 @@ public abstract class Event<TPayload> : Destroyable, IEvent<TPayload>
     protected readonly HashSet<EventConnection<TPayload>> Connections = [];
 
     /// <summary>
+    /// Clears event connections. By default, removes only non-persistent connections.
+    /// </summary>
+    /// <param name="force">
+    /// If <see langword="true"/>, clears all connections including persistent ones.
+    /// </param>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the event has already been destroyed.
+    /// </exception>
+    public void Clear(bool force = false)
+    {
+        ThrowIfDestroyed();
+
+        if (force)
+        {
+            Connections.Clear();
+            return;
+        }
+
+        Connections.RemoveWhere(connection => !connection.Persistent);
+    }
+
+    /// <summary>
     /// Subscribes a callback function to the event.
     /// </summary>
     /// <param name="callback">The function to be called when the event occurs.</param>
@@ -93,28 +115,6 @@ public abstract class Event<TPayload> : Destroyable, IEvent<TPayload>
         Connections.Add(connection);
 
         return connection;
-    }
-
-    /// <summary>
-    /// Clears event connections. By default, removes only non-persistent connections.
-    /// </summary>
-    /// <param name="force">
-    /// If <see langword="true"/>, clears all connections including persistent ones.
-    /// </param>
-    /// <exception cref="DestroyedObjectException">
-    /// Thrown when the event has already been destroyed.
-    /// </exception>
-    public void Clear(bool force = false)
-    {
-        ThrowIfDestroyed();
-
-        if (force)
-        {
-            Connections.Clear();
-            return;
-        }
-
-        Connections.RemoveWhere(connection => !connection.Persistent);
     }
 
     /// <summary>

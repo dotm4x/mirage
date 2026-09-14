@@ -9,10 +9,10 @@ namespace Mirage.Core.Telemetry.Ports;
 public sealed class ConsolePort : Destroyable, IPort
 {
     private const string AnsiCyan = "\e[36m";
-    private const string AnsiGreen = "\e[32m";
-    private const string AnsiYellow = "\e[33m";
     private const string AnsiGray = "\e[90m";
+    private const string AnsiGreen = "\e[32m";
     private const string AnsiReset = "\e[0m";
+    private const string AnsiYellow = "\e[33m";
 
     /// <summary>
     /// Gets the priority assigned to the console port.
@@ -54,17 +54,6 @@ public sealed class ConsolePort : Destroyable, IPort
         }
     }
 
-    private static string GetKindName(MessageKind kind)
-    {
-        return kind switch
-        {
-            MessageKind.Debug => "DEBUG",
-            MessageKind.Information => "INFO",
-            MessageKind.Warn => "WARN",
-            _ => "INFO",
-        };
-    }
-
     private static string GetColor(MessageKind kind)
     {
         return kind switch
@@ -73,6 +62,17 @@ public sealed class ConsolePort : Destroyable, IPort
             MessageKind.Information => AnsiGreen,
             MessageKind.Warn => AnsiYellow,
             _ => AnsiGreen,
+        };
+    }
+
+    private static string GetKindName(MessageKind kind)
+    {
+        return kind switch
+        {
+            MessageKind.Debug => "DEBUG",
+            MessageKind.Information => "INFO",
+            MessageKind.Warn => "WARN",
+            _ => "INFO",
         };
     }
 }

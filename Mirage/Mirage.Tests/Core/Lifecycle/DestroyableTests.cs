@@ -79,16 +79,16 @@ public class DestroyableTests
 
         public bool WasDestroyedDuringOnDestroy { get; private set; }
 
-        public void ValidateNotDestroyed()
-        {
-            ThrowIfDestroyed();
-        }
-
         protected override void OnDestroy()
         {
             OnDestroyCalled = true;
             WasDestroyedDuringOnDestroy = Destroyed;
             onDestroy?.Invoke();
+        }
+
+        public void ValidateNotDestroyed()
+        {
+            ThrowIfDestroyed();
         }
     }
 }

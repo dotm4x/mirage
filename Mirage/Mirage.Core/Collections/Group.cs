@@ -52,16 +52,16 @@ public interface IReadOnlyGroup<TItem> : IEnumerable<TItem>
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
 public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
 {
+    private readonly List<TItem> _items = [];
+    private readonly Signal<TItem> _onAdd = new();
+    private readonly Signal<Unit> _onClear = new();
+    private readonly Signal<TItem> _onRemove = new();
+
     /// <summary>
     /// Gets the maximum number of items allowed in the group. A value of
     /// <c>0</c> indicates unlimited capacity.
     /// </summary>
     public readonly int Limit;
-
-    private readonly List<TItem> _items = [];
-    private readonly Signal<TItem> _onAdd = new();
-    private readonly Signal<Unit> _onClear = new();
-    private readonly Signal<TItem> _onRemove = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Group{TItem}"/> class.
@@ -98,19 +98,14 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     public IReadOnlyEvent<TItem> OnAdd { get; }
 
     /// <summary>
-    /// Gets the event fired whenever an item is removed from the group.
-    /// </summary>
-    public IReadOnlyEvent<TItem> OnRemove { get; }
-
-    /// <summary>
     /// Gets the event fired when the group is cleared.
     /// </summary>
     public IReadOnlyEvent<Unit> OnClear { get; }
 
     /// <summary>
-    /// Gets the number of items currently contained in the group.
+    /// Gets the event fired whenever an item is removed from the group.
     /// </summary>
-    public int Count => _items.Count;
+    public IReadOnlyEvent<TItem> OnRemove { get; }
 
     /// <summary>
     /// Determines whether the specified item is contained in the group.
@@ -126,6 +121,11 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     }
 
     /// <summary>
+    /// Gets the number of items currently contained in the group.
+    /// </summary>
+    public int Count => _items.Count;
+
+    /// <summary>
     /// Performs the specified action on each item in the group.
     /// </summary>
     /// <param name="action">The action to perform for each item.</param>
@@ -133,24 +133,6 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     {
         foreach (var item in _items)
             action(item);
-    }
-
-    /// <summary>
-    /// Creates an array containing all items in the group.
-    /// </summary>
-    /// <returns>A new array containing the items in the group.</returns>
-    public TItem[] ToArray()
-    {
-        return [.. _items];
-    }
-
-    /// <summary>
-    /// Creates a list containing all items in the group.
-    /// </summary>
-    /// <returns>A new list containing the items in the group.</returns>
-    public List<TItem> ToList()
-    {
-        return [.. _items];
     }
 
     /// <summary>
@@ -171,10 +153,38 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
         return GetEnumerator();
     }
 
+    /// <summary>
+    /// Creates an array containing all items in the group.
+    /// </summary>
+    /// <returns>A new array containing the items in the group.</returns>
+    public TItem[] ToArray()
+    {
+        return [.. _items];
+    }
+
+    /// <summary>
+    /// Creates a list containing all items in the group.
+    /// </summary>
+    /// <returns>A new list containing the items in the group.</returns>
+    public List<TItem> ToList()
+    {
+        return [.. _items];
+    }
+
     private void Truncate()
     {
         if (Limit > 0 && _items.Count >= Limit)
             Remove(_items[0]);
+    }
+
+    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    protected override void OnDestroy()
+    {
+        Clear();
+
+        _onAdd.Destroy();
+        _onRemove.Destroy();
+        _onClear.Destroy();
     }
 
     /// <summary>
@@ -208,6 +218,22 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     }
 
     /// <summary>
+    /// Removes all items from the group.
+    /// </summary>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the group has been destroyed.
+    /// </exception>
+    public void Clear()
+    {
+        ThrowIfDestroyed();
+
+        _onClear.Fire(Unit.Value);
+
+        foreach (var item in _items.ToArray())
+            Remove(item);
+    }
+
+    /// <summary>
     /// Removes one or more items from the group.
     /// </summary>
     /// <param name="items">The items to remove.</param>
@@ -229,31 +255,5 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
             _onRemove.Fire(item);
             _items.Remove(item);
         }
-    }
-
-    /// <summary>
-    /// Removes all items from the group.
-    /// </summary>
-    /// <exception cref="DestroyedObjectException">
-    /// Thrown when the group has been destroyed.
-    /// </exception>
-    public void Clear()
-    {
-        ThrowIfDestroyed();
-
-        _onClear.Fire(Unit.Value);
-
-        foreach (var item in _items.ToArray())
-            Remove(item);
-    }
-
-    /// <inheritdoc cref="Destroyable.OnDestroy"/>
-    protected override void OnDestroy()
-    {
-        Clear();
-
-        _onAdd.Destroy();
-        _onRemove.Destroy();
-        _onClear.Destroy();
     }
 }

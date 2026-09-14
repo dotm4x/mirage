@@ -53,9 +53,6 @@ public interface IDestroyable
 /// </remarks>
 public abstract class Destroyable : IDestroyable
 {
-    /// <inheritdoc cref="IDestroyable.Destroyed"/>
-    public bool Destroyed { get; private set; }
-
     /// <summary>
     /// Destroys this object.
     /// </summary>
@@ -76,17 +73,8 @@ public abstract class Destroyable : IDestroyable
         Destroyed = true;
     }
 
-    /// <summary>
-    /// Throws an exception if this object has already been destroyed.
-    /// </summary>
-    /// <exception cref="DestroyedObjectException">
-    /// Thrown when this object has been destroyed.
-    /// </exception>
-    protected void ThrowIfDestroyed()
-    {
-        if (Destroyed)
-            throw new DestroyedObjectException($"{GetTypeName()} is destroyed.");
-    }
+    /// <inheritdoc cref="IDestroyable.Destroyed"/>
+    public bool Destroyed { get; private set; }
 
     private string GetTypeName()
     {
@@ -104,4 +92,16 @@ public abstract class Destroyable : IDestroyable
     /// other cleanup operations required by the object.
     /// </remarks>
     protected virtual void OnDestroy() { }
+
+    /// <summary>
+    /// Throws an exception if this object has already been destroyed.
+    /// </summary>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when this object has been destroyed.
+    /// </exception>
+    protected void ThrowIfDestroyed()
+    {
+        if (Destroyed)
+            throw new DestroyedObjectException($"{GetTypeName()} is destroyed.");
+    }
 }
