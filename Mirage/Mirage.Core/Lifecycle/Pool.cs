@@ -22,22 +22,13 @@ public interface IPoolable : IRestorable
 /// <typeparam name="TItem">
 /// The type of objects managed by the pool.
 /// </typeparam>
-public class Pool<TItem>
+/// <param name="factory">
+/// The factory used to create objects when no available objects exist.
+/// </param>
+public class Pool<TItem>(Func<TItem> factory)
     where TItem : IPoolable
 {
     private readonly Stack<TItem> _available = [];
-    private readonly Func<TItem> _factory;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Pool{TItem}"/> class.
-    /// </summary>
-    /// <param name="factory">
-    /// The factory used to create objects when no available objects exist.
-    /// </param>
-    public Pool(Func<TItem> factory)
-    {
-        _factory = factory;
-    }
 
     /// <summary>
     /// Acquires an object from the pool.
@@ -48,7 +39,7 @@ public class Pool<TItem>
     /// </returns>
     public TItem Acquire()
     {
-        var item = _available.Count > 0 ? _available.Pop() : _factory();
+        var item = _available.Count > 0 ? _available.Pop() : factory();
 
         item.OnAcquire();
 
