@@ -36,12 +36,12 @@ public interface IReadOnlyEvent<TPayload> : IReadOnlyDestroyable
 {
     /// <summary>
     /// Subscribes a callback function to the event.
-/// </summary>
-/// <param name="callback">The function to be called when the event occurs.</param>
-/// <param name="persistent">
-/// Whether the connection should survive standard clearing operations.
-/// </param>
-/// <returns>An <see cref="EventConnection{TPayload}"/> representing the subscription.</returns>
+    /// </summary>
+    /// <param name="callback">The function to be called when the event occurs.</param>
+    /// <param name="persistent">
+    /// Whether the connection should survive standard clearing operations.
+    /// </param>
+    /// <returns>An <see cref="EventConnection{TPayload}"/> representing the subscription.</returns>
     EventConnection<TPayload> Connect(Action<TPayload> callback, bool persistent = false);
 }
 

@@ -231,5 +231,4 @@ public class StoreTest
         Assert.Throws<DestroyedObjectException>(() => store.Set(100));
         Assert.Equal(0, calls);
     }
-
 }

@@ -130,7 +130,7 @@ public abstract class Game : Destroyable
                 );
 
         TargetFramerate = targetFramerate;
-        
+
         Modules = _modules.AsReadOnly();
         State = _state;
     }

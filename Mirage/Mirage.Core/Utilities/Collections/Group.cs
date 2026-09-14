@@ -99,10 +99,7 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     public Group(IEnumerable<TItem>? items = null, int limit = 0)
     {
         if (limit < 0)
-            throw new ArgumentOutOfRangeException(
-                nameof(limit),
-                "Limit cannot be negative"
-            );
+            throw new ArgumentOutOfRangeException(nameof(limit), "Limit cannot be negative");
 
         Limit = limit;
 
@@ -167,9 +164,7 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
         foreach (var item in items)
         {
             if (!_items.Contains(item))
-                throw new InvalidOperationException(
-                    "Item is not in the group, cannot remove"
-                );
+                throw new InvalidOperationException("Item is not in the group, cannot remove");
 
             _onRemove.Fire(item);
             _items.Remove(item);
@@ -261,4 +256,3 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
         _onClear.Destroy();
     }
 }
-
