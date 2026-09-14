@@ -1,6 +1,5 @@
 using Mirage.Core;
 using Mirage.Core.Lifecycle;
-using Mirage.Core.Modules;
 using CoreTelemetry = Mirage.Core.Telemetry.Telemetry;
 
 namespace Mirage.Tests.Core;

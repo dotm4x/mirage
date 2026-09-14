@@ -2,7 +2,7 @@ using Mirage.Core.Lifecycle;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Utilities.Events;
 
-namespace Mirage.Core.Modules;
+namespace Mirage.Core;
 
 /// <summary>
 /// Provides access to a collection of modules registered in a game.
