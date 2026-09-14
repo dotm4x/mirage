@@ -61,7 +61,7 @@ public sealed class ConsolePort : Destroyable, IPort
             MessageKind.Debug => "DEBUG",
             MessageKind.Information => "INFO",
             MessageKind.Warn => "WARN",
-            _ => "INFO",
+            _ => "INFO"
         };
     }
 
@@ -72,7 +72,7 @@ public sealed class ConsolePort : Destroyable, IPort
             MessageKind.Debug => AnsiCyan,
             MessageKind.Information => AnsiGreen,
             MessageKind.Warn => AnsiYellow,
-            _ => AnsiGreen,
+            _ => AnsiGreen
         };
     }
 }
