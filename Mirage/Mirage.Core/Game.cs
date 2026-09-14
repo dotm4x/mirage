@@ -45,54 +45,14 @@ public enum GameState
 /// </remarks>
 public abstract class Game : Destroyable
 {
-    private readonly Dictionary<string, Module> _modules = [];
-    private readonly Store<GameState> _state = new(GameState.Idle);
-    private IReadOnlyList<Module>? _moduleOrder;
-
-    /// <summary>
-    /// Gets the modules registered in the game, indexed by identifier.
-    /// </summary>
-    public IReadOnlyDictionary<string, Module> Modules { get; }
-
     /// <summary>
     /// Gets the telemetry manager used by the game and its modules.
     /// </summary>
     protected readonly Telemetry.Telemetry Telemetry;
 
-    /// <summary>
-    /// Gets a read-only view of the game's current lifecycle state.
-    /// </summary>
-    public IReadOnlyStore<GameState> State { get; }
-
-    /// <summary>
-    /// Gets or sets the target number of frames the game attempts to process
-    /// per second. A value of <c>0</c> disables frame-rate limiting.
-    /// </summary>
-    public double TargetFramerate
-    {
-        get;
-        private init
-        {
-            if (value is < 0 or double.NaN)
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    "Target framerate must be zero or greater."
-                );
-
-            field = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets the current measured framerate of the game.
-    /// </summary>
-    public double Framerate { get; private set; }
-
-    /// <summary>
-    /// Gets the amount of time elapsed since the previous frame, in seconds.
-    /// </summary>
-    public double DeltaTime { get; private set; }
+    private readonly Dictionary<string, Module> _modules = [];
+    private readonly Store<GameState> _state = new(GameState.Idle);
+    private IReadOnlyList<Module>? _moduleOrder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
@@ -133,6 +93,46 @@ public abstract class Game : Destroyable
         Modules = _modules.AsReadOnly();
         State = _state;
     }
+
+    /// <summary>
+    /// Gets the modules registered in the game, indexed by identifier.
+    /// </summary>
+    public IReadOnlyDictionary<string, Module> Modules { get; }
+
+    /// <summary>
+    /// Gets a read-only view of the game's current lifecycle state.
+    /// </summary>
+    public IReadOnlyStore<GameState> State { get; }
+
+    /// <summary>
+    /// Gets or sets the target number of frames the game attempts to process
+    /// per second. A value of <c>0</c> disables frame-rate limiting.
+    /// </summary>
+    public double TargetFramerate
+    {
+        get;
+        private init
+        {
+            if (value is < 0 or double.NaN)
+                throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    value,
+                    "Target framerate must be zero or greater."
+                );
+
+            field = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the current measured framerate of the game.
+    /// </summary>
+    public double Framerate { get; private set; }
+
+    /// <summary>
+    /// Gets the amount of time elapsed since the previous frame, in seconds.
+    /// </summary>
+    public double DeltaTime { get; private set; }
 
     /// <summary>
     /// Gets a registered module of the specified type.

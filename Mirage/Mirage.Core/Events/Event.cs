@@ -96,25 +96,6 @@ public abstract class Event<TPayload> : Destroyable, IEvent<TPayload>
     }
 
     /// <summary>
-    /// Dispatches a payload to all currently connected listeners.
-    /// </summary>
-    /// <param name="payload">The value passed to each event listener.</param>
-    /// <remarks>
-    /// A snapshot of the current connections is used so listeners can safely
-    /// connect, disconnect, or clear connections while the event is being dispatched.
-    /// </remarks>
-    /// <exception cref="DestroyedObjectException">
-    /// Thrown when the event has already been destroyed.
-    /// </exception>
-    protected void Dispatch(TPayload payload)
-    {
-        ThrowIfDestroyed();
-
-        foreach (var connection in Connections.ToArray())
-            connection.Callback(payload);
-    }
-
-    /// <summary>
     /// Clears event connections. By default, removes only non-persistent connections.
     /// </summary>
     /// <param name="force">
@@ -134,6 +115,25 @@ public abstract class Event<TPayload> : Destroyable, IEvent<TPayload>
         }
 
         Connections.RemoveWhere(connection => !connection.Persistent);
+    }
+
+    /// <summary>
+    /// Dispatches a payload to all currently connected listeners.
+    /// </summary>
+    /// <param name="payload">The value passed to each event listener.</param>
+    /// <remarks>
+    /// A snapshot of the current connections is used so listeners can safely
+    /// connect, disconnect, or clear connections while the event is being dispatched.
+    /// </remarks>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the event has already been destroyed.
+    /// </exception>
+    protected void Dispatch(TPayload payload)
+    {
+        ThrowIfDestroyed();
+
+        foreach (var connection in Connections.ToArray())
+            connection.Callback(payload);
     }
 
     /// <inheritdoc cref="IDestroyable.Destroy"/>

@@ -52,36 +52,16 @@ public interface IReadOnlyGroup<TItem> : IEnumerable<TItem>
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
 public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
 {
-    private readonly List<TItem> _items = [];
-    private readonly Signal<TItem> _onAdd = new();
-    private readonly Signal<TItem> _onRemove = new();
-    private readonly Signal<Unit> _onClear = new();
-
     /// <summary>
     /// Gets the maximum number of items allowed in the group. A value of
     /// <c>0</c> indicates unlimited capacity.
     /// </summary>
     public readonly int Limit;
 
-    /// <summary>
-    /// Gets the number of items currently contained in the group.
-    /// </summary>
-    public int Count => _items.Count;
-
-    /// <summary>
-    /// Gets the event fired whenever an item is added to the group.
-    /// </summary>
-    public IReadOnlyEvent<TItem> OnAdd { get; }
-
-    /// <summary>
-    /// Gets the event fired whenever an item is removed from the group.
-    /// </summary>
-    public IReadOnlyEvent<TItem> OnRemove { get; }
-
-    /// <summary>
-    /// Gets the event fired when the group is cleared.
-    /// </summary>
-    public IReadOnlyEvent<Unit> OnClear { get; }
+    private readonly List<TItem> _items = [];
+    private readonly Signal<TItem> _onAdd = new();
+    private readonly Signal<Unit> _onClear = new();
+    private readonly Signal<TItem> _onRemove = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Group{TItem}"/> class.
@@ -110,6 +90,85 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
         OnAdd = _onAdd;
         OnRemove = _onRemove;
         OnClear = _onClear;
+    }
+
+    /// <summary>
+    /// Gets the event fired whenever an item is added to the group.
+    /// </summary>
+    public IReadOnlyEvent<TItem> OnAdd { get; }
+
+    /// <summary>
+    /// Gets the event fired whenever an item is removed from the group.
+    /// </summary>
+    public IReadOnlyEvent<TItem> OnRemove { get; }
+
+    /// <summary>
+    /// Gets the event fired when the group is cleared.
+    /// </summary>
+    public IReadOnlyEvent<Unit> OnClear { get; }
+
+    /// <summary>
+    /// Gets the number of items currently contained in the group.
+    /// </summary>
+    public int Count => _items.Count;
+
+    /// <summary>
+    /// Determines whether the specified item is contained in the group.
+    /// </summary>
+    /// <param name="item">The item to locate.</param>
+    /// <returns>
+    /// <see langword="true"/> if the item is contained in the group; otherwise,
+    /// <see langword="false"/>.
+    /// </returns>
+    public bool Contains(TItem item)
+    {
+        return _items.Contains(item);
+    }
+
+    /// <summary>
+    /// Performs the specified action on each item in the group.
+    /// </summary>
+    /// <param name="action">The action to perform for each item.</param>
+    public void ForEach(Action<TItem> action)
+    {
+        foreach (var item in _items)
+            action(item);
+    }
+
+    /// <summary>
+    /// Creates an array containing all items in the group.
+    /// </summary>
+    /// <returns>A new array containing the items in the group.</returns>
+    public TItem[] ToArray()
+    {
+        return [.. _items];
+    }
+
+    /// <summary>
+    /// Creates a list containing all items in the group.
+    /// </summary>
+    /// <returns>A new list containing the items in the group.</returns>
+    public List<TItem> ToList()
+    {
+        return [.. _items];
+    }
+
+    /// <summary>
+    /// Returns an enumerator that iterates through the items in the group.
+    /// </summary>
+    /// <returns>An enumerator for the group.</returns>
+    public IEnumerator<TItem> GetEnumerator()
+    {
+        return _items.GetEnumerator();
+    }
+
+    /// <summary>
+    /// Returns an enumerator that iterates through the items in the group.
+    /// </summary>
+    /// <returns>An enumerator for the group.</returns>
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 
     private void Truncate()
@@ -170,65 +229,6 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
             _onRemove.Fire(item);
             _items.Remove(item);
         }
-    }
-
-    /// <summary>
-    /// Determines whether the specified item is contained in the group.
-    /// </summary>
-    /// <param name="item">The item to locate.</param>
-    /// <returns>
-    /// <see langword="true"/> if the item is contained in the group; otherwise,
-    /// <see langword="false"/>.
-    /// </returns>
-    public bool Contains(TItem item)
-    {
-        return _items.Contains(item);
-    }
-
-    /// <summary>
-    /// Performs the specified action on each item in the group.
-    /// </summary>
-    /// <param name="action">The action to perform for each item.</param>
-    public void ForEach(Action<TItem> action)
-    {
-        foreach (var item in _items)
-            action(item);
-    }
-
-    /// <summary>
-    /// Creates an array containing all items in the group.
-    /// </summary>
-    /// <returns>A new array containing the items in the group.</returns>
-    public TItem[] ToArray()
-    {
-        return [.. _items];
-    }
-
-    /// <summary>
-    /// Creates a list containing all items in the group.
-    /// </summary>
-    /// <returns>A new list containing the items in the group.</returns>
-    public List<TItem> ToList()
-    {
-        return [.. _items];
-    }
-
-    /// <summary>
-    /// Returns an enumerator that iterates through the items in the group.
-    /// </summary>
-    /// <returns>An enumerator for the group.</returns>
-    public IEnumerator<TItem> GetEnumerator()
-    {
-        return _items.GetEnumerator();
-    }
-
-    /// <summary>
-    /// Returns an enumerator that iterates through the items in the group.
-    /// </summary>
-    /// <returns>An enumerator for the group.</returns>
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
     }
 
     /// <summary>

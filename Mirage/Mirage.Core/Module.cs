@@ -84,29 +84,19 @@
     /// </remarks>
     public abstract class Module : Destroyable
     {
-        private readonly Store<ModuleState> _state = new(ModuleState.Idle);
-        private readonly Dictionary<string, Module> _injectedDependencies = [];
-        private bool _injected;
-
-        /// <summary>
-        /// Gets the unique module identifier.
-        /// </summary>
-        public readonly string Identifier;
-
         /// <summary>
         /// Gets the identifiers of the modules required by this module.
         /// </summary>
         public readonly IReadOnlyList<string> Dependencies;
 
         /// <summary>
-        /// Gets the telemetry manager available to the module after injection.
+        /// Gets the unique module identifier.
         /// </summary>
-        protected Telemetry.Telemetry Telemetry { get; private set; } = null!;
+        public readonly string Identifier;
 
-        /// <summary>
-        /// Gets a read-only store for the current lifecycle state of the module.
-        /// </summary>
-        public IReadOnlyStore<ModuleState> State { get; }
+        private readonly Dictionary<string, Module> _injectedDependencies = [];
+        private readonly Store<ModuleState> _state = new(ModuleState.Idle);
+        private bool _injected;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Module"/> class.
@@ -124,6 +114,16 @@
 
             State = _state;
         }
+
+        /// <summary>
+        /// Gets the telemetry manager available to the module after injection.
+        /// </summary>
+        protected Telemetry.Telemetry Telemetry { get; private set; } = null!;
+
+        /// <summary>
+        /// Gets a read-only store for the current lifecycle state of the module.
+        /// </summary>
+        public IReadOnlyStore<ModuleState> State { get; }
 
         /// <summary>
         /// Injects the shared game context and resolves the module's dependencies.

@@ -143,9 +143,8 @@ public class TelemetryTest
         Action<Message>? onSend = null
     ) : Destroyable, IPort
     {
-        public PortPriority Priority { get; } = priority;
-
         public List<Message> Messages { get; } = [];
+        public PortPriority Priority { get; } = priority;
 
         public void Send(Message message)
         {
