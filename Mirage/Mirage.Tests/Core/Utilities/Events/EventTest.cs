@@ -35,7 +35,7 @@ public class EventTest
     {
         var @event = new TestEvent();
 
-        var connection = @event.Connect(_ => { }, persistent: true);
+        var connection = @event.Connect(_ => { }, true);
 
         Assert.True(connection.Persistent);
     }
@@ -49,7 +49,10 @@ public class EventTest
         Assert.Throws<DestroyedObjectException>((Func<EventConnection<int>>)Action);
         return;
 
-        EventConnection<int> Action() => @event.Connect(_ => { });
+        EventConnection<int> Action()
+        {
+            return @event.Connect(_ => { });
+        }
     }
 
     [Fact]
@@ -86,7 +89,7 @@ public class EventTest
         var @event = new TestEvent();
         var calls = 0;
 
-        @event.Connect(_ => calls++, persistent: true);
+        @event.Connect(_ => calls++, true);
         @event.Clear();
 
         @event.Fire(1);
@@ -100,8 +103,8 @@ public class EventTest
         var @event = new TestEvent();
         var calls = 0;
 
-        @event.Connect(_ => calls++, persistent: true);
-        @event.Clear(force: true);
+        @event.Connect(_ => calls++, true);
+        @event.Clear(true);
 
         @event.Fire(1);
 
@@ -117,7 +120,10 @@ public class EventTest
         Assert.Throws<DestroyedObjectException>(Action);
         return;
 
-        void Action() => @event.Clear();
+        void Action()
+        {
+            @event.Clear();
+        }
     }
 
     [Fact]
@@ -129,7 +135,10 @@ public class EventTest
         Assert.Throws<DestroyedObjectException>(Action);
         return;
 
-        void Action() => @event.Clear(force: true);
+        void Action()
+        {
+            @event.Clear(true);
+        }
     }
 
     [Fact]
@@ -157,7 +166,10 @@ public class EventTest
         Assert.Throws<DestroyedObjectException>(Action);
         return;
 
-        void Action() => readonlyEvent.Connect(_ => { });
+        void Action()
+        {
+            readonlyEvent.Connect(_ => { });
+        }
     }
 
     [Fact]
@@ -201,10 +213,7 @@ public class EventTest
     {
         public void Fire(int value)
         {
-            foreach (var connection in Connections)
-            {
-                connection.Callback(value);
-            }
+            foreach (var connection in Connections) connection.Callback(value);
         }
     }
 }

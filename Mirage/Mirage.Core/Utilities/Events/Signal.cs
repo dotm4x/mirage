@@ -31,10 +31,7 @@ public class Signal<TPayload> : Event<TPayload>
     /// </exception>
     public void Fire(TPayload payload)
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Signal is destroyed, cannot fire");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Signal is destroyed, cannot fire");
 
         Dispatch(payload);
     }

@@ -57,7 +57,10 @@ public class SignalTest
         Assert.Throws<DestroyedObjectException>(Action);
         return;
 
-        void Action() => signal.Fire(42);
+        void Action()
+        {
+            signal.Fire(42);
+        }
     }
 
     [Fact]
@@ -80,7 +83,7 @@ public class SignalTest
         var signal = new Signal<int>();
         var calls = 0;
 
-        signal.Connect(_ => calls++, persistent: true);
+        signal.Connect(_ => calls++, true);
 
         signal.Fire(42);
 

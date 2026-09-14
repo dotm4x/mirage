@@ -148,7 +148,10 @@ public class StoreTest
         Assert.Throws<DestroyedObjectException>(Action);
         return;
 
-        void Action() => store.Set(10);
+        void Action()
+        {
+            store.Set(10);
+        }
     }
 
     [Fact]
@@ -208,7 +211,7 @@ public class StoreTest
         var store = new Store<int>(0);
         var calls = 0;
 
-        store.Connect(_ => calls++, persistent: true);
+        store.Connect(_ => calls++, true);
 
         store.Clear();
         store.Set(42);
@@ -262,7 +265,10 @@ public class StoreTest
         Assert.Throws<DestroyedObjectException>(Action);
         return;
 
-        void Action() => readonlyStore.Event.Connect(_ => { });
+        void Action()
+        {
+            readonlyStore.Event.Connect(_ => { });
+        }
     }
 
     [Fact]

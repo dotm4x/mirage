@@ -69,10 +69,7 @@ public abstract class Event<TPayload> : IDestroyable
     /// </exception>
     public EventConnection<TPayload> Connect(Action<TPayload> callback, bool persistent = false)
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Event is destroyed, cannot connect");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Event is destroyed, cannot connect");
 
         EventConnection<TPayload> connection = null!;
 
@@ -100,19 +97,12 @@ public abstract class Event<TPayload> : IDestroyable
     /// </exception>
     public void Clear(bool force = false)
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Event is destroyed, cannot clear");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Event is destroyed, cannot clear");
 
         if (force)
-        {
             Connections.Clear();
-        }
         else
-        {
             Connections.RemoveWhere(connection => !connection.Persistent);
-        }
     }
 
     /// <summary>
@@ -137,19 +127,13 @@ public abstract class Event<TPayload> : IDestroyable
     /// </remarks>
     protected void Dispatch(TPayload payload)
     {
-        foreach (var connection in Connections.ToArray())
-        {
-            connection.Callback(payload);
-        }
+        foreach (var connection in Connections.ToArray()) connection.Callback(payload);
     }
 
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Event is already destroyed, cannot destroy again");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Event is already destroyed, cannot destroy again");
 
         Connections.Clear();
         Destroyed = true;

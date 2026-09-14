@@ -131,10 +131,7 @@ public class ModuleTest
             "Test",
             onStop: () =>
             {
-                if (stopAttempts++ == 0)
-                {
-                    throw new InvalidOperationException("Test exception");
-                }
+                if (stopAttempts++ == 0) throw new InvalidOperationException("Test exception");
             }
         );
 

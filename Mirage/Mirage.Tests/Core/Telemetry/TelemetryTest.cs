@@ -109,7 +109,10 @@ public class TelemetryTest
         Assert.Throws<DestroyedObjectException>(Action);
         return;
 
-        void Action() => telemetry.Send(new Message());
+        void Action()
+        {
+            telemetry.Send(new Message());
+        }
     }
 
     [Fact]

@@ -82,7 +82,7 @@ public class GameTest
         var module = new TestModule(
             "Module",
             ["Dependency"],
-            onStart: () => startOrder.Add("Module")
+            () => startOrder.Add("Module")
         );
 
         var game = new TestGame([module, dependency]);
@@ -366,10 +366,7 @@ public class GameTest
 
             onUpdate?.Invoke(deltaTime);
 
-            if (stopAfterUpdates.HasValue && _updates >= stopAfterUpdates.Value)
-            {
-                Stop();
-            }
+            if (stopAfterUpdates.HasValue && _updates >= stopAfterUpdates.Value) Stop();
         }
     }
 

@@ -74,17 +74,11 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
     /// </exception>
     public void Set(TValue value)
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Store is destroyed, cannot set value");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Store is destroyed, cannot set value");
 
         if (equals is not null)
         {
-            if (equals(_value, value))
-            {
-                return;
-            }
+            if (equals(_value, value)) return;
         }
         else if (EqualityComparer<TValue>.Default.Equals(_value, value))
         {

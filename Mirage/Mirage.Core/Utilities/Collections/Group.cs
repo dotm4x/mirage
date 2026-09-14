@@ -35,10 +35,7 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
     /// <param name="action">The action to perform for each item.</param>
     public void ForEach(Action<TItem> action)
     {
-        foreach (var item in items)
-        {
-            action(item);
-        }
+        foreach (var item in items) action(item);
     }
 
     /// <summary>
@@ -135,17 +132,11 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// </exception>
     public Group(IEnumerable<TItem>? items = null, int limit = 0)
     {
-        if (limit < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit), "Limit cannot be negative");
-        }
+        if (limit < 0) throw new ArgumentOutOfRangeException(nameof(limit), "Limit cannot be negative");
 
         Limit = limit;
 
-        foreach (var item in items ?? [])
-        {
-            Add(item);
-        }
+        foreach (var item in items ?? []) Add(item);
 
         OnAdd = _onAdd.AsReadonly();
         OnRemove = _onRemove.AsReadonly();
@@ -154,18 +145,12 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
     private void ThrowIfDestroyed()
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Group is destroyed");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Group is destroyed");
     }
 
     private void Truncate()
     {
-        if (Limit > 0 && _items.Count >= Limit)
-        {
-            Remove(_items[0]);
-        }
+        if (Limit > 0 && _items.Count >= Limit) Remove(_items[0]);
     }
 
     /// <summary>
@@ -186,11 +171,9 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
         foreach (var item in items)
         {
             if (_items.Contains(item))
-            {
                 throw new InvalidOperationException(
                     "Item is already in the group, cannot add again"
                 );
-            }
 
             Truncate();
             _items.Add(item);
@@ -216,10 +199,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
         foreach (var item in items)
         {
-            if (!_items.Contains(item))
-            {
-                throw new InvalidOperationException("Item is not in the group, cannot remove");
-            }
+            if (!_items.Contains(item)) throw new InvalidOperationException("Item is not in the group, cannot remove");
 
             _onRemove.Fire(item);
             _items.Remove(item);
@@ -245,10 +225,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <param name="action">The action to perform for each item.</param>
     public void ForEach(Action<TItem> action)
     {
-        foreach (var item in _items)
-        {
-            action(item);
-        }
+        foreach (var item in _items) action(item);
     }
 
     /// <summary>
@@ -299,10 +276,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
         _onClear.Fire(Unit.Value);
 
-        foreach (var item in _items.ToArray())
-        {
-            Remove(item);
-        }
+        foreach (var item in _items.ToArray()) Remove(item);
     }
 
     /// <summary>
@@ -321,10 +295,7 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <inheritdoc cref="IDestroyable.Destroy"/>
     public void Destroy()
     {
-        if (Destroyed)
-        {
-            throw new DestroyedObjectException("Group is already destroyed, cannot destroy again");
-        }
+        if (Destroyed) throw new DestroyedObjectException("Group is already destroyed, cannot destroy again");
 
         Clear();
 

@@ -35,7 +35,10 @@ public class GroupTest
         Assert.Throws<ArgumentOutOfRangeException>((Func<Group<int>>)Action);
         return;
 
-        static Group<int> Action() => new(limit: limit);
+        static Group<int> Action()
+        {
+            return new Group<int>(limit: limit);
+        }
     }
 
     [Fact]
@@ -59,7 +62,10 @@ public class GroupTest
         Assert.Throws<InvalidOperationException>((Func<int[]>)Action);
         return;
 
-        int[] Action() => group.Add(1);
+        int[] Action()
+        {
+            return group.Add(1);
+        }
     }
 
     [Fact]
@@ -148,7 +154,10 @@ public class GroupTest
         Assert.Throws<InvalidOperationException>(Action);
         return;
 
-        void Action() => group.Remove(2);
+        void Action()
+        {
+            group.Remove(2);
+        }
     }
 
     [Fact]
@@ -326,7 +335,10 @@ public class GroupTest
         Assert.Throws<DestroyedObjectException>((Func<int[]>)Action);
         return;
 
-        int[] Action() => group.Add(1);
+        int[] Action()
+        {
+            return group.Add(1);
+        }
     }
 
     [Fact]
@@ -338,7 +350,10 @@ public class GroupTest
         Assert.Throws<DestroyedObjectException>(Action);
         return;
 
-        void Action() => group.Remove(1);
+        void Action()
+        {
+            group.Remove(1);
+        }
     }
 
     [Fact]
