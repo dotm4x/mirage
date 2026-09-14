@@ -1,0 +1,109 @@
+namespace Mirage.Core.Lifecycle;
+
+/// <summary>
+/// Provides read-only access to the lifecycle state of a destroyable object.
+/// </summary>
+public interface IReadOnlyDestroyable
+{
+    /// <summary>
+    /// Gets a value indicating whether the object has been destroyed.
+    /// </summary>
+    bool Destroyed { get; }
+}
+
+/// <summary>
+/// Represents an exception thrown when an operation is attempted on an object
+/// that has already been destroyed.
+/// </summary>
+/// <param name="message">
+/// The message that describes the invalid operation.
+/// </param>
+public sealed class DestroyedObjectException(string message) : InvalidOperationException(message);
+
+/// <summary>
+/// Defines an object that has a destroyable lifecycle.
+/// </summary>
+/// <remarks>
+/// A destroyable object can be destroyed when it is no longer needed.
+/// Once destroyed, the object must not be used for further operations.
+/// </remarks>
+public interface IDestroyable
+{
+    /// <summary>
+    /// Gets a value indicating whether the object has been destroyed.
+    /// </summary>
+    bool Destroyed { get; }
+
+    /// <summary>
+    /// Destroys the object and transitions it to the destroyed state.
+    /// </summary>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the object has already been destroyed.
+    /// </exception>
+    void Destroy();
+}
+
+/// <summary>
+/// Provides a base implementation for objects with a destroyable lifecycle.
+/// </summary>
+/// <remarks>
+/// <see cref="Destroyable"/> manages the destroyed state and provides a lifecycle
+/// hook that derived types can override to release their resources or perform
+/// additional cleanup.
+/// </remarks>
+public abstract class Destroyable : IDestroyable
+{
+    /// <inheritdoc cref="IDestroyable.Destroyed"/>
+    public bool Destroyed { get; private set; }
+
+    /// <summary>
+    /// Destroys this object.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="OnDestroy"/> is invoked before the object is marked as destroyed.
+    /// If <see cref="OnDestroy"/> throws an exception, the object remains undestroyed.
+    /// </remarks>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when this object has already been destroyed.
+    /// </exception>
+    public void Destroy()
+    {
+        if (Destroyed)
+            throw new DestroyedObjectException($"{GetTypeName()} has already been destroyed.");
+
+        OnDestroy();
+
+        Destroyed = true;
+    }
+
+    /// <summary>
+    /// Throws an exception if this object has already been destroyed.
+    /// </summary>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when this object has been destroyed.
+    /// </exception>
+    protected void ThrowIfDestroyed()
+    {
+        if (Destroyed)
+        {
+            throw new DestroyedObjectException($"{GetTypeName()} is destroyed.");
+        }
+    }
+
+    private string GetTypeName()
+    {
+        var name = GetType().Name;
+        var genericIndex = name.IndexOf('`');
+
+        return genericIndex >= 0 ? name[..genericIndex] : name;
+    }
+
+    /// <summary>
+    /// Performs additional cleanup when the object is destroyed.
+    /// </summary>
+    /// <remarks>
+    /// Derived types can override this method to release resources or perform
+    /// other cleanup operations required by the object.
+    /// </remarks>
+    protected virtual void OnDestroy() { }
+}

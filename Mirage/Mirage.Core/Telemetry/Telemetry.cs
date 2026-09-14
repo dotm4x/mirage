@@ -1,5 +1,4 @@
-using Mirage.Core.Exceptions;
-using Mirage.Core.Interfaces;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Telemetry.Ports;
 using Mirage.Core.Utilities.Collections;
 using Mirage.Core.Utilities.Events;
@@ -10,7 +9,7 @@ namespace Mirage.Core.Telemetry;
 /// Represents a telemetry manager responsible for collecting, organizing,
 /// and dispatching messages across multiple prioritized output ports.
 /// </summary>
-public sealed class Telemetry : IDestroyable
+public sealed class Telemetry : Destroyable
 {
     private readonly Signal<Message> _onSend = new();
 
@@ -18,9 +17,6 @@ public sealed class Telemetry : IDestroyable
     /// Gets the registered telemetry output ports.
     /// </summary>
     public readonly Group<IPort> Ports = [];
-
-    /// <inheritdoc cref="IDestroyable.Destroyed"/>
-    public bool Destroyed { get; private set; }
 
     /// <summary>
     /// Gets the signal fired after a message is dispatched to all output ports.
@@ -35,7 +31,8 @@ public sealed class Telemetry : IDestroyable
     /// </param>
     public Telemetry(IEnumerable<IPort>? ports = null)
     {
-        foreach (var port in ports ?? []) Ports.Add(port);
+        foreach (var port in ports ?? [])
+            Ports.Add(port);
 
         OnSend = _onSend.AsReadonly();
     }
@@ -87,30 +84,26 @@ public sealed class Telemetry : IDestroyable
     /// </exception>
     public Message Send(Message message)
     {
-        if (Destroyed) throw new DestroyedObjectException("Telemetry is destroyed, cannot send messages");
+        if (Destroyed)
+            throw new DestroyedObjectException("Telemetry is destroyed, cannot send messages");
 
         IPort[] sortedPorts = [.. Ports.OrderByDescending(port => port.Priority)];
 
-        foreach (var port in sortedPorts) port.Send(message);
+        foreach (var port in sortedPorts)
+            port.Send(message);
 
         _onSend.Fire(message);
 
         return message;
     }
 
-    /// <inheritdoc cref="IDestroyable.Destroy"/>
-    public void Destroy()
+    /// <inheritdoc cref="Destroyable.Destroy"/>
+    protected override void OnDestroy()
     {
-        if (Destroyed)
-            throw new DestroyedObjectException(
-                "Telemetry is already destroyed, cannot destroy again"
-            );
-
-        foreach (var port in Ports) port.Destroy();
+        foreach (var port in Ports)
+            port.Destroy();
 
         Ports.Destroy();
         _onSend.Destroy();
-
-        Destroyed = true;
     }
 }

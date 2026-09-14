@@ -1,6 +1,6 @@
 namespace Mirage.Tests.Core.Telemetry;
 
-using Mirage.Core.Exceptions;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Telemetry.Ports;
 using Xunit;

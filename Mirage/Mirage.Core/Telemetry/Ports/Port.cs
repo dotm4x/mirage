@@ -1,5 +1,4 @@
-using Mirage.Core.Exceptions;
-using Mirage.Core.Interfaces;
+using Mirage.Core.Lifecycle;
 
 namespace Mirage.Core.Telemetry.Ports;
 
@@ -27,7 +26,7 @@ public enum PortPriority
     /// <summary>
     /// Represents the highest priority for a telemetry port.
     /// </summary>
-    Critical = 100
+    Critical = 100,
 }
 
 /// <summary>

@@ -1,6 +1,5 @@
 using System.Diagnostics;
-using Mirage.Core.Exceptions;
-using Mirage.Core.Interfaces;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Modules;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Utilities.Events;
@@ -30,7 +29,7 @@ public enum GameState
     /// <summary>
     /// Indicates that the game is currently stopping.
     /// </summary>
-    Stopping
+    Stopping,
 }
 
 /// <summary>
@@ -45,7 +44,7 @@ public enum GameState
 /// game loop and repeatedly invokes <see cref="OnUpdate(double)"/> until the game
 /// is stopped.
 /// </remarks>
-public abstract class Game : IDestroyable
+public abstract class Game : Destroyable
 {
     private readonly Dictionary<string, Module> _modules = [];
     private readonly Store<GameState> _state = new(GameState.Idle);
@@ -95,9 +94,6 @@ public abstract class Game : IDestroyable
     /// Gets the amount of time elapsed since the previous frame, in seconds.
     /// </summary>
     public double DeltaTime { get; private set; }
-
-    /// <inheritdoc cref="IDestroyable.Destroyed"/>
-    public bool Destroyed { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Game"/> class.
@@ -163,9 +159,7 @@ public abstract class Game : IDestroyable
     /// <remarks>
     /// Override this method to perform game-specific startup logic.
     /// </remarks>
-    protected virtual void OnStart()
-    {
-    }
+    protected virtual void OnStart() { }
 
     /// <summary>
     /// Called once for each frame while the game is running.
@@ -176,9 +170,7 @@ public abstract class Game : IDestroyable
     /// <remarks>
     /// Override this method to implement game-specific per-frame logic.
     /// </remarks>
-    protected virtual void OnUpdate(double deltaTime)
-    {
-    }
+    protected virtual void OnUpdate(double deltaTime) { }
 
     /// <summary>
     /// Called when the game has successfully stopped all running modules.
@@ -186,19 +178,7 @@ public abstract class Game : IDestroyable
     /// <remarks>
     /// Override this method to perform game-specific shutdown logic.
     /// </remarks>
-    protected virtual void OnStop()
-    {
-    }
-
-    /// <summary>
-    /// Called when the game is destroyed.
-    /// </summary>
-    /// <remarks>
-    /// Override this method to release game-specific resources.
-    /// </remarks>
-    protected virtual void OnDestroy()
-    {
-    }
+    protected virtual void OnStop() { }
 
     /// <summary>
     /// Starts the game, all registered modules, and the main game loop.
@@ -228,7 +208,7 @@ public abstract class Game : IDestroyable
     /// </exception>
     public void Start()
     {
-        if (Destroyed) throw new DestroyedObjectException("Game is destroyed, cannot start");
+        ThrowIfDestroyed();
 
         var currentState = _state.Get();
 
@@ -250,10 +230,11 @@ public abstract class Game : IDestroyable
             ModuleContext context = new()
             {
                 Telemetry = Telemetry,
-                Modules = new ModuleContainer(sortedModules)
+                Modules = new ModuleContainer(sortedModules),
             };
 
-            foreach (var module in sortedModules) module.Inject(context);
+            foreach (var module in sortedModules)
+                module.Inject(context);
 
             foreach (var module in sortedModules)
             {
@@ -313,7 +294,8 @@ public abstract class Game : IDestroyable
 
             var remainingFrameTime = frameDuration - elapsedFrameTime;
 
-            if (remainingFrameTime > 0) Thread.Sleep(TimeSpan.FromSeconds(remainingFrameTime));
+            if (remainingFrameTime > 0)
+                Thread.Sleep(TimeSpan.FromSeconds(remainingFrameTime));
         }
     }
 
@@ -342,7 +324,7 @@ public abstract class Game : IDestroyable
     /// </exception>
     public void Stop()
     {
-        if (Destroyed) throw new DestroyedObjectException("Game is destroyed, cannot stop");
+        ThrowIfDestroyed();
 
         var currentState = _state.Get();
 
@@ -363,7 +345,8 @@ public abstract class Game : IDestroyable
             {
                 var module = sortedModules[index];
 
-                if (module.State.Get() == ModuleState.Running) module.Stop();
+                if (module.State.Get() == ModuleState.Running)
+                    module.Stop();
             }
 
             OnStop();
@@ -417,13 +400,16 @@ public abstract class Game : IDestroyable
     {
         Dictionary<string, Module> modulesByIdentifier = [];
 
-        foreach (var module in _modules.Values) modulesByIdentifier.Add(module.Identifier, module);
+        foreach (var module in _modules.Values)
+            modulesByIdentifier.Add(module.Identifier, module);
 
         List<Module> sortedModules = [];
         HashSet<string> visiting = [];
         HashSet<string> visited = [];
 
-        foreach (var module in _modules.Values.Where(module => !visited.Contains(module.Identifier)))
+        foreach (
+            var module in _modules.Values.Where(module => !visited.Contains(module.Identifier))
+        )
             Resolve(module, []);
 
         return sortedModules;
@@ -439,7 +425,8 @@ public abstract class Game : IDestroyable
                 );
             }
 
-            if (visited.Contains(module.Identifier)) return;
+            if (visited.Contains(module.Identifier))
+                return;
 
             visiting.Add(module.Identifier);
             dependencyPath.Add(module.Identifier);
@@ -462,11 +449,9 @@ public abstract class Game : IDestroyable
         }
     }
 
-    /// <inheritdoc cref="IDestroyable.Destroy"/>
-    public void Destroy()
+    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    protected override void OnDestroy()
     {
-        if (Destroyed) throw new DestroyedObjectException("Game is already destroyed, cannot destroy again");
-
         var currentState = _state.Get();
 
         if (currentState != GameState.Idle)
@@ -474,15 +459,12 @@ public abstract class Game : IDestroyable
                 $"Game cannot be destroyed while in state '{currentState}'"
             );
 
-        OnDestroy();
-
-        foreach (var module in _modules.Values) module.Destroy();
+        foreach (var module in _modules.Values)
+            module.Destroy();
 
         _modules.Clear();
 
         _state.Destroy();
-
-        Destroyed = true;
 
         Telemetry.Send("Game has been destroyed", "Game", MessageKind.Debug);
 

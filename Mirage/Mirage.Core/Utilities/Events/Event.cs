@@ -1,5 +1,4 @@
-using Mirage.Core.Exceptions;
-using Mirage.Core.Interfaces;
+using Mirage.Core.Lifecycle;
 
 namespace Mirage.Core.Utilities.Events;
 
@@ -45,15 +44,12 @@ public class ReadonlyEvent<TPayload>(Action<Action<TPayload>> connect)
 /// Base class for managing and dispatching events with type-safe payloads.
 /// </summary>
 /// <typeparam name="TPayload">The type of the value passed to event listeners.</typeparam>
-public abstract class Event<TPayload> : IDestroyable
+public abstract class Event<TPayload> : Destroyable
 {
-    protected readonly HashSet<EventConnection<TPayload>> Connections = [];
-
     /// <summary>
     /// Gets the active event connections.
     /// </summary>
-    /// <inheritdoc cref="IDestroyable.Destroyed"/>
-    public bool Destroyed { get; private set; }
+    protected readonly HashSet<EventConnection<TPayload>> Connections = [];
 
     /// <summary>
     /// Subscribes a callback function to the event.
@@ -69,15 +65,15 @@ public abstract class Event<TPayload> : IDestroyable
     /// </exception>
     public EventConnection<TPayload> Connect(Action<TPayload> callback, bool persistent = false)
     {
-        if (Destroyed) throw new DestroyedObjectException("Event is destroyed, cannot connect");
+        if (Destroyed)
+            throw new DestroyedObjectException("Event is destroyed, cannot connect");
 
         EventConnection<TPayload> connection = null!;
 
-        var connection1 = connection;
         connection = new EventConnection<TPayload>(
             callback,
             persistent,
-            () => Connections.Remove(connection1)
+            () => Connections.Remove(connection)
         );
 
         Connections.Add(connection);
@@ -97,7 +93,7 @@ public abstract class Event<TPayload> : IDestroyable
     /// </exception>
     public void Clear(bool force = false)
     {
-        if (Destroyed) throw new DestroyedObjectException("Event is destroyed, cannot clear");
+        ThrowIfDestroyed();
 
         if (force)
             Connections.Clear();
@@ -127,15 +123,15 @@ public abstract class Event<TPayload> : IDestroyable
     /// </remarks>
     protected void Dispatch(TPayload payload)
     {
-        foreach (var connection in Connections.ToArray()) connection.Callback(payload);
+        ThrowIfDestroyed();
+
+        foreach (var connection in Connections.ToArray())
+            connection.Callback(payload);
     }
 
-    /// <inheritdoc cref="IDestroyable.Destroy"/>
-    public void Destroy()
+    /// <inheritdoc cref="Destroyable.Destroy"/>
+    protected override void OnDestroy()
     {
-        if (Destroyed) throw new DestroyedObjectException("Event is already destroyed, cannot destroy again");
-
         Connections.Clear();
-        Destroyed = true;
     }
 }

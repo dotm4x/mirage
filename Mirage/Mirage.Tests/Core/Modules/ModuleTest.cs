@@ -1,7 +1,7 @@
-namespace Mirage.Tests.Core.Utilities.Modules;
+namespace Mirage.Tests.Core.Modules;
 
 using Mirage.Core;
-using Mirage.Core.Exceptions;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Modules;
 using Xunit;
 
@@ -131,7 +131,8 @@ public class ModuleTest
             "Test",
             onStop: () =>
             {
-                if (stopAttempts++ == 0) throw new InvalidOperationException("Test exception");
+                if (stopAttempts++ == 0)
+                    throw new InvalidOperationException("Test exception");
             }
         );
 

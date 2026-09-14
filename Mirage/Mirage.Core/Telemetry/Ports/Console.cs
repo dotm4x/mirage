@@ -1,5 +1,4 @@
-using Mirage.Core.Exceptions;
-using Mirage.Core.Interfaces;
+using Mirage.Core.Lifecycle;
 
 namespace Mirage.Core.Telemetry.Ports;
 
@@ -7,7 +6,7 @@ namespace Mirage.Core.Telemetry.Ports;
 /// Represents a console-based telemetry output port that formats and writes
 /// telemetry messages to standard output using ANSI colors and timestamps.
 /// </summary>
-public sealed class ConsolePort : IPort
+public sealed class ConsolePort : Destroyable, IPort
 {
     private const string AnsiCyan = "\e[36m";
     private const string AnsiGreen = "\e[32m";
@@ -20,9 +19,6 @@ public sealed class ConsolePort : IPort
     /// </summary>
     public PortPriority Priority => PortPriority.Critical;
 
-    /// <inheritdoc cref="IDestroyable.Destroyed"/>
-    public bool Destroyed { get; private set; }
-
     /// <summary>
     /// Sends a telemetry message to the console.
     /// </summary>
@@ -32,7 +28,7 @@ public sealed class ConsolePort : IPort
     /// </exception>
     public void Send(Message message)
     {
-        if (Destroyed) throw new DestroyedObjectException("Console port is destroyed, cannot send messages");
+        ThrowIfDestroyed();
 
         var timestamp = DateTime.Now.ToString("HH:mm:ss");
 
@@ -58,17 +54,6 @@ public sealed class ConsolePort : IPort
         }
     }
 
-    /// <inheritdoc cref="IDestroyable.Destroy"/>
-    public void Destroy()
-    {
-        if (Destroyed)
-            throw new DestroyedObjectException(
-                "Console port is already destroyed, cannot destroy again"
-            );
-
-        Destroyed = true;
-    }
-
     private static string GetKindName(MessageKind kind)
     {
         return kind switch
@@ -76,7 +61,7 @@ public sealed class ConsolePort : IPort
             MessageKind.Debug => "DEBUG",
             MessageKind.Information => "INFO",
             MessageKind.Warn => "WARN",
-            _ => "INFO"
+            _ => "INFO",
         };
     }
 
@@ -87,7 +72,7 @@ public sealed class ConsolePort : IPort
             MessageKind.Debug => AnsiCyan,
             MessageKind.Information => AnsiGreen,
             MessageKind.Warn => AnsiYellow,
-            _ => AnsiGreen
+            _ => AnsiGreen,
         };
     }
 }

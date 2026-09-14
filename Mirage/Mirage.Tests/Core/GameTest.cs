@@ -1,8 +1,6 @@
 using Mirage.Core;
-using Mirage.Core.Exceptions;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Modules;
-using Mirage.Core.Telemetry;
-using Xunit;
 using CoreTelemetry = Mirage.Core.Telemetry.Telemetry;
 
 namespace Mirage.Tests.Core;
@@ -79,11 +77,7 @@ public class GameTest
 
         var dependency = new TestModule("Dependency", onStart: () => startOrder.Add("Dependency"));
 
-        var module = new TestModule(
-            "Module",
-            ["Dependency"],
-            () => startOrder.Add("Module")
-        );
+        var module = new TestModule("Module", ["Dependency"], () => startOrder.Add("Module"));
 
         var game = new TestGame([module, dependency]);
 
@@ -366,7 +360,8 @@ public class GameTest
 
             onUpdate?.Invoke(deltaTime);
 
-            if (stopAfterUpdates.HasValue && _updates >= stopAfterUpdates.Value) Stop();
+            if (stopAfterUpdates.HasValue && _updates >= stopAfterUpdates.Value)
+                Stop();
         }
     }
 

@@ -1,6 +1,6 @@
 namespace Mirage.Tests.Core.Utilities.Events;
 
-using Mirage.Core.Exceptions;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Utilities.Events;
 using Xunit;
 
@@ -213,7 +213,8 @@ public class EventTest
     {
         public void Fire(int value)
         {
-            foreach (var connection in Connections) connection.Callback(value);
+            foreach (var connection in Connections)
+                connection.Callback(value);
         }
     }
 }

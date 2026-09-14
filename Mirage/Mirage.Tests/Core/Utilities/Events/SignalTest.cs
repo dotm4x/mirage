@@ -1,6 +1,6 @@
 namespace Mirage.Tests.Core.Utilities.Events;
 
-using Mirage.Core.Exceptions;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Utilities.Events;
 using Xunit;
 

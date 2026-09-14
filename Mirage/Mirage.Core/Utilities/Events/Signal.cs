@@ -1,5 +1,3 @@
-using Mirage.Core.Exceptions;
-
 namespace Mirage.Core.Utilities.Events;
 
 /// <summary>
@@ -31,7 +29,7 @@ public class Signal<TPayload> : Event<TPayload>
     /// </exception>
     public void Fire(TPayload payload)
     {
-        if (Destroyed) throw new DestroyedObjectException("Signal is destroyed, cannot fire");
+        ThrowIfDestroyed();
 
         Dispatch(payload);
     }

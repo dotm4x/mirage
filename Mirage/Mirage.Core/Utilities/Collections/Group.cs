@@ -1,6 +1,5 @@
 using System.Collections;
-using Mirage.Core.Exceptions;
-using Mirage.Core.Interfaces;
+using Mirage.Core.Lifecycle;
 using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core.Utilities.Collections;
@@ -35,7 +34,8 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
     /// <param name="action">The action to perform for each item.</param>
     public void ForEach(Action<TItem> action)
     {
-        foreach (var item in items) action(item);
+        foreach (var item in items)
+            action(item);
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
 /// and an optional capacity limit with automatic truncation.
 /// </summary>
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
-public class Group<TItem> : IDestroyable, IEnumerable<TItem>
+public class Group<TItem> : Destroyable, IEnumerable<TItem>
 {
     private readonly List<TItem> _items = [];
     private readonly Signal<TItem> _onAdd = new();
@@ -97,9 +97,6 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// Gets the number of items currently contained in the group.
     /// </summary>
     public int Count => _items.Count;
-
-    /// <inheritdoc cref="IDestroyable.Destroyed"/>
-    public bool Destroyed { get; private set; }
 
     /// <summary>
     /// Gets the event fired whenever an item is added to the group.
@@ -132,25 +129,23 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// </exception>
     public Group(IEnumerable<TItem>? items = null, int limit = 0)
     {
-        if (limit < 0) throw new ArgumentOutOfRangeException(nameof(limit), "Limit cannot be negative");
+        if (limit < 0)
+            throw new ArgumentOutOfRangeException(nameof(limit), "Limit cannot be negative");
 
         Limit = limit;
 
-        foreach (var item in items ?? []) Add(item);
+        foreach (var item in items ?? [])
+            Add(item);
 
         OnAdd = _onAdd.AsReadonly();
         OnRemove = _onRemove.AsReadonly();
         OnClear = _onClear.AsReadonly();
     }
 
-    private void ThrowIfDestroyed()
-    {
-        if (Destroyed) throw new DestroyedObjectException("Group is destroyed");
-    }
-
     private void Truncate()
     {
-        if (Limit > 0 && _items.Count >= Limit) Remove(_items[0]);
+        if (Limit > 0 && _items.Count >= Limit)
+            Remove(_items[0]);
     }
 
     /// <summary>
@@ -199,7 +194,8 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
         foreach (var item in items)
         {
-            if (!_items.Contains(item)) throw new InvalidOperationException("Item is not in the group, cannot remove");
+            if (!_items.Contains(item))
+                throw new InvalidOperationException("Item is not in the group, cannot remove");
 
             _onRemove.Fire(item);
             _items.Remove(item);
@@ -225,7 +221,8 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
     /// <param name="action">The action to perform for each item.</param>
     public void ForEach(Action<TItem> action)
     {
-        foreach (var item in _items) action(item);
+        foreach (var item in _items)
+            action(item);
     }
 
     /// <summary>
@@ -276,7 +273,8 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
 
         _onClear.Fire(Unit.Value);
 
-        foreach (var item in _items.ToArray()) Remove(item);
+        foreach (var item in _items.ToArray())
+            Remove(item);
     }
 
     /// <summary>
@@ -292,17 +290,13 @@ public class Group<TItem> : IDestroyable, IEnumerable<TItem>
         return new ReadonlyGroup<TItem>(_items);
     }
 
-    /// <inheritdoc cref="IDestroyable.Destroy"/>
-    public void Destroy()
+    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    protected override void OnDestroy()
     {
-        if (Destroyed) throw new DestroyedObjectException("Group is already destroyed, cannot destroy again");
-
         Clear();
 
         _onAdd.Destroy();
         _onRemove.Destroy();
         _onClear.Destroy();
-
-        Destroyed = true;
     }
 }
