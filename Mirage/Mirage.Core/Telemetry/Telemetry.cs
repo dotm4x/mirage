@@ -21,7 +21,7 @@ public sealed class Telemetry : Destroyable
     /// <summary>
     /// Gets the signal fired after a message is dispatched to all output ports.
     /// </summary>
-    public readonly ReadonlyEvent<Message> OnSend;
+    public IReadOnlyEvent<Message> OnSend { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Telemetry"/> class.
@@ -34,7 +34,7 @@ public sealed class Telemetry : Destroyable
         foreach (var port in ports ?? [])
             Ports.Add(port);
 
-        OnSend = _onSend.AsReadonly();
+        OnSend = _onSend;
     }
 
     /// <summary>
@@ -84,8 +84,7 @@ public sealed class Telemetry : Destroyable
     /// </exception>
     public Message Send(Message message)
     {
-        if (Destroyed)
-            throw new DestroyedObjectException("Telemetry is destroyed, cannot send messages");
+        ThrowIfDestroyed();
 
         IPort[] sortedPorts = [.. Ports.OrderByDescending(port => port.Priority)];
 
