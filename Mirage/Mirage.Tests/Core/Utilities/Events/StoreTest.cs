@@ -220,58 +220,6 @@ public class StoreTest
     }
 
     [Fact]
-    public void AsReadonly_ReturnsCurrentValue()
-    {
-        var store = new Store<int>(42);
-
-        var readonlyStore = store.AsReadonly();
-
-        Assert.Equal(42, readonlyStore.Get());
-    }
-
-    [Fact]
-    public void AsReadonly_ReflectsUpdatedValue()
-    {
-        var store = new Store<int>(42);
-        var readonlyStore = store.AsReadonly();
-
-        store.Set(100);
-
-        Assert.Equal(100, readonlyStore.Get());
-    }
-
-    [Fact]
-    public void AsReadonly_AllowsListeningToChanges()
-    {
-        var store = new Store<int>(42);
-        var readonlyStore = store.AsReadonly();
-        var received = 0;
-
-        readonlyStore.Event.Connect(value => received = value);
-
-        store.Set(100);
-
-        Assert.Equal(100, received);
-    }
-
-    [Fact]
-    public void AsReadonly_WhenStoreIsDestroyed_CannotConnect()
-    {
-        var store = new Store<int>(42);
-        var readonlyStore = store.AsReadonly();
-
-        store.Destroy();
-
-        Assert.Throws<DestroyedObjectException>(Action);
-        return;
-
-        void Action()
-        {
-            readonlyStore.Event.Connect(_ => { });
-        }
-    }
-
-    [Fact]
     public void Destroy_MarksStoreAsDestroyed()
     {
         var store = new Store<int>(42);

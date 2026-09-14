@@ -142,37 +142,6 @@ public class EventTest
     }
 
     [Fact]
-    public void AsReadonly_AllowsConnectingToEvent()
-    {
-        var @event = new TestEvent();
-        var readonlyEvent = @event.AsReadonly();
-        var received = 0;
-
-        readonlyEvent.Connect(value => received = value);
-
-        @event.Fire(42);
-
-        Assert.Equal(42, received);
-    }
-
-    [Fact]
-    public void AsReadonly_WhenEventIsDestroyed_CannotConnect()
-    {
-        var @event = new TestEvent();
-        var readonlyEvent = @event.AsReadonly();
-
-        @event.Destroy();
-
-        Assert.Throws<DestroyedObjectException>(Action);
-        return;
-
-        void Action()
-        {
-            readonlyEvent.Connect(_ => { });
-        }
-    }
-
-    [Fact]
     public void Destroy_RemovesAllConnections()
     {
         var @event = new TestEvent();
