@@ -29,7 +29,7 @@ public enum GameState
     /// <summary>
     /// Indicates that the game is currently stopping.
     /// </summary>
-    Stopping
+    Stopping,
 }
 
 /// <summary>
@@ -159,9 +159,7 @@ public abstract class Game : Destroyable
     /// <remarks>
     /// Override this method to perform game-specific startup logic.
     /// </remarks>
-    protected virtual void OnStart()
-    {
-    }
+    protected virtual void OnStart() { }
 
     /// <summary>
     /// Called once for each frame while the game is running.
@@ -172,9 +170,7 @@ public abstract class Game : Destroyable
     /// <remarks>
     /// Override this method to implement game-specific per-frame logic.
     /// </remarks>
-    protected virtual void OnUpdate(double deltaTime)
-    {
-    }
+    protected virtual void OnUpdate(double deltaTime) { }
 
     /// <summary>
     /// Called when the game has successfully stopped all running modules.
@@ -182,9 +178,7 @@ public abstract class Game : Destroyable
     /// <remarks>
     /// Override this method to perform game-specific shutdown logic.
     /// </remarks>
-    protected virtual void OnStop()
-    {
-    }
+    protected virtual void OnStop() { }
 
     /// <summary>
     /// Starts the game, all registered modules, and the main game loop.
@@ -236,7 +230,7 @@ public abstract class Game : Destroyable
             ModuleContext context = new()
             {
                 Telemetry = Telemetry,
-                Modules = new ModuleContainer(sortedModules)
+                Modules = new ModuleContainer(sortedModules),
             };
 
             foreach (var module in sortedModules)

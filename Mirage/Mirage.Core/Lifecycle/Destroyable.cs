@@ -84,7 +84,8 @@ public abstract class Destroyable : IDestroyable
     /// </exception>
     protected void ThrowIfDestroyed()
     {
-        if (Destroyed) throw new DestroyedObjectException($"{GetTypeName()} is destroyed.");
+        if (Destroyed)
+            throw new DestroyedObjectException($"{GetTypeName()} is destroyed.");
     }
 
     private string GetTypeName()
@@ -102,7 +103,5 @@ public abstract class Destroyable : IDestroyable
     /// Derived types can override this method to release resources or perform
     /// other cleanup operations required by the object.
     /// </remarks>
-    protected virtual void OnDestroy()
-    {
-    }
+    protected virtual void OnDestroy() { }
 }

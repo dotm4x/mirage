@@ -24,11 +24,7 @@ public class Channel : Destroyable
         Channels = _channels.AsReadOnly();
     }
 
-    public void Update()
-    {
-    }
+    public void Update() { }
 
-    protected override void OnDestroy()
-    {
-    }
+    protected override void OnDestroy() { }
 }

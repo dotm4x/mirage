@@ -72,7 +72,7 @@ public enum ModuleState
     /// <summary>
     /// Indicates that the module is currently stopping.
     /// </summary>
-    Stopping
+    Stopping,
 }
 
 /// <summary>
@@ -187,9 +187,7 @@ public abstract class Module : Destroyable
     /// <remarks>
     /// Override this method to perform module-specific startup logic.
     /// </remarks>
-    protected virtual void OnStart()
-    {
-    }
+    protected virtual void OnStart() { }
 
     /// <summary>
     /// Called when the module stops.
@@ -197,9 +195,7 @@ public abstract class Module : Destroyable
     /// <remarks>
     /// Override this method to perform module-specific shutdown logic.
     /// </remarks>
-    protected virtual void OnStop()
-    {
-    }
+    protected virtual void OnStop() { }
 
     /// <summary>
     /// Starts the module and transitions it to the running state.

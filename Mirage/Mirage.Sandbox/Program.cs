@@ -18,9 +18,7 @@ internal class MyGame() : Game([new MyModule()], 0, new Telemetry([new ConsolePo
 {
     private MyModule MyModule => Require<MyModule>();
 
-    protected override void OnStart()
-    {
-    }
+    protected override void OnStart() { }
 
     protected override void OnUpdate(double deltaTime)
     {
