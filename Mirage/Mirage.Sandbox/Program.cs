@@ -1,26 +1,30 @@
 ﻿using Mirage.Core;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Telemetry.Ports;
+using Mirage.Sandbox;
 
 MyGame game = new();
 game.Start();
 
-internal class MyModule() : Module("MyModule")
+namespace Mirage.Sandbox
 {
-    public void DoSomething()
+    internal class MyModule() : Module("MyModule")
     {
-        Telemetry.Send("Doing something");
+        public void DoSomething()
+        {
+            Telemetry.Send("Doing something");
+        }
     }
-}
 
-internal class MyGame() : Game([new MyModule()], 0, new Telemetry([new ConsolePort()]))
-{
-    private MyModule MyModule => Require<MyModule>();
-
-    protected override void OnStart() { }
-
-    protected override void OnUpdate(double deltaTime)
+    internal class MyGame() : Game([new MyModule()], 0, new Telemetry([new ConsolePort()]))
     {
-        Telemetry.Send("Hola");
+        private MyModule MyModule => Require<MyModule>();
+
+        protected override void OnStart() { }
+
+        protected override void OnUpdate(double deltaTime)
+        {
+            Telemetry.Send("Hola");
+        }
     }
 }

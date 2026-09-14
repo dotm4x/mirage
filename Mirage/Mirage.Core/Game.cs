@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Mirage.Core;
+using Mirage.Core.Events;
 using Mirage.Core.Lifecycle;
 using Mirage.Core.Telemetry;
-using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core;
 

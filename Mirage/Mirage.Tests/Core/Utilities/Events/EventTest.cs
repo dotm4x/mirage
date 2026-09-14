@@ -1,7 +1,8 @@
+using Mirage.Core.Events;
+
 namespace Mirage.Tests.Core.Utilities.Events;
 
 using Mirage.Core.Lifecycle;
-using Mirage.Core.Utilities.Events;
 using Xunit;
 
 public class EventTest

@@ -1,4 +1,4 @@
-namespace Mirage.Core.Interfaces;
+namespace Mirage.Scheduler.Interfaces;
 
 /// <summary>
 /// Defines an object that can be updated.

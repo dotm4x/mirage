@@ -1,6 +1,6 @@
 using Mirage.Core.Lifecycle;
 
-namespace Mirage.Core.Utilities.Events;
+namespace Mirage.Core.Events;
 
 /// <summary>
 /// Provides read-only access to a store.

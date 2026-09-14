@@ -1,4 +1,4 @@
-namespace Mirage.Core.Utilities;
+namespace Mirage.Core.Primitives;
 
 /// <summary>
 /// Represents a type with a single possible value and no associated data.

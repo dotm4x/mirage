@@ -1,7 +1,7 @@
+using Mirage.Core.Collections;
+using Mirage.Core.Events;
 using Mirage.Core.Lifecycle;
 using Mirage.Core.Telemetry.Ports;
-using Mirage.Core.Utilities.Collections;
-using Mirage.Core.Utilities.Events;
 
 namespace Mirage.Core.Telemetry;
 
