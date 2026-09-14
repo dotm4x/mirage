@@ -8,12 +8,12 @@ namespace Mirage.Core.Utilities.Collections;
 /// Provides read-only access to the items in a group.
 /// </summary>
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
-public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
+public interface IReadOnlyGroup<TItem> : IEnumerable<TItem>
 {
     /// <summary>
     /// Gets the number of items currently contained in the group.
     /// </summary>
-    public int Count { get; } = items.Count();
+    int Count { get; }
 
     /// <summary>
     /// Determines whether the specified item is contained in the group.
@@ -23,56 +23,25 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
     /// <see langword="true"/> if the item is contained in the group; otherwise,
     /// <see langword="false"/>.
     /// </returns>
-    public bool Contains(TItem item)
-    {
-        return items.Contains(item);
-    }
+    bool Contains(TItem item);
 
     /// <summary>
     /// Performs the specified action on each item in the group.
     /// </summary>
     /// <param name="action">The action to perform for each item.</param>
-    public void ForEach(Action<TItem> action)
-    {
-        foreach (var item in items)
-            action(item);
-    }
+    void ForEach(Action<TItem> action);
 
     /// <summary>
     /// Creates an array containing all items in the group.
     /// </summary>
     /// <returns>A new array containing the items in the group.</returns>
-    public TItem[] ToArray()
-    {
-        return [.. items];
-    }
+    TItem[] ToArray();
 
     /// <summary>
     /// Creates a list containing all items in the group.
     /// </summary>
     /// <returns>A new list containing the items in the group.</returns>
-    public List<TItem> ToList()
-    {
-        return [.. items];
-    }
-
-    /// <summary>
-    /// Returns an enumerator that iterates through the items in the group.
-    /// </summary>
-    /// <returns>An enumerator for the group.</returns>
-    public IEnumerator<TItem> GetEnumerator()
-    {
-        return items.GetEnumerator();
-    }
-
-    /// <summary>
-    /// Returns an enumerator that iterates through the items in the group.
-    /// </summary>
-    /// <returns>An enumerator for the group.</returns>
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    List<TItem> ToList();
 }
 
 /// <summary>
@@ -80,7 +49,7 @@ public class ReadonlyGroup<TItem>(IEnumerable<TItem> items) : IEnumerable<TItem>
 /// and an optional capacity limit with automatic truncation.
 /// </summary>
 /// <typeparam name="TItem">The type of items stored in the group.</typeparam>
-public class Group<TItem> : Destroyable, IEnumerable<TItem>
+public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
 {
     private readonly List<TItem> _items = [];
     private readonly Signal<TItem> _onAdd = new();
@@ -101,17 +70,17 @@ public class Group<TItem> : Destroyable, IEnumerable<TItem>
     /// <summary>
     /// Gets the event fired whenever an item is added to the group.
     /// </summary>
-    public ReadonlyEvent<TItem> OnAdd { get; }
+    public IReadOnlyEvent<TItem> OnAdd { get; }
 
     /// <summary>
     /// Gets the event fired whenever an item is removed from the group.
     /// </summary>
-    public ReadonlyEvent<TItem> OnRemove { get; }
+    public IReadOnlyEvent<TItem> OnRemove { get; }
 
     /// <summary>
     /// Gets the event fired when the group is cleared.
     /// </summary>
-    public ReadonlyEvent<Unit> OnClear { get; }
+    public IReadOnlyEvent<Unit> OnClear { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Group{TItem}"/> class.
@@ -130,16 +99,19 @@ public class Group<TItem> : Destroyable, IEnumerable<TItem>
     public Group(IEnumerable<TItem>? items = null, int limit = 0)
     {
         if (limit < 0)
-            throw new ArgumentOutOfRangeException(nameof(limit), "Limit cannot be negative");
+            throw new ArgumentOutOfRangeException(
+                nameof(limit),
+                "Limit cannot be negative"
+            );
 
         Limit = limit;
 
         foreach (var item in items ?? [])
             Add(item);
 
-        OnAdd = _onAdd.AsReadonly();
-        OnRemove = _onRemove.AsReadonly();
-        OnClear = _onClear.AsReadonly();
+        OnAdd = _onAdd;
+        OnRemove = _onRemove;
+        OnClear = _onClear;
     }
 
     private void Truncate()
@@ -195,7 +167,9 @@ public class Group<TItem> : Destroyable, IEnumerable<TItem>
         foreach (var item in items)
         {
             if (!_items.Contains(item))
-                throw new InvalidOperationException("Item is not in the group, cannot remove");
+                throw new InvalidOperationException(
+                    "Item is not in the group, cannot remove"
+                );
 
             _onRemove.Fire(item);
             _items.Remove(item);
@@ -277,19 +251,6 @@ public class Group<TItem> : Destroyable, IEnumerable<TItem>
             Remove(item);
     }
 
-    /// <summary>
-    /// Creates a read-only view of the group without access to its mutating
-    /// operations.
-    /// </summary>
-    /// <returns>
-    /// A <see cref="ReadonlyGroup{TItem}"/> that allows reading the group's items
-    /// without providing access to its mutating operations.
-    /// </returns>
-    public ReadonlyGroup<TItem> AsReadonly()
-    {
-        return new ReadonlyGroup<TItem>(_items);
-    }
-
     /// <inheritdoc cref="Destroyable.OnDestroy"/>
     protected override void OnDestroy()
     {
@@ -300,3 +261,4 @@ public class Group<TItem> : Destroyable, IEnumerable<TItem>
         _onClear.Destroy();
     }
 }
+
