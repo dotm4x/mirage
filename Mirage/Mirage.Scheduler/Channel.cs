@@ -78,7 +78,7 @@ public class Channel : Destroyable
     /// Called after all entries in the channel have been updated.
     /// </summary>
     /// <param name="deltaTime">The elapsed time since the previous update.</param>
-    protected virtual void OnUpdate(float deltaTime) { }
+    protected virtual void OnUpdate(double deltaTime) { }
 
     /// <summary>
     /// Updates all entries in the channel.
@@ -87,7 +87,7 @@ public class Channel : Destroyable
     /// <exception cref="DestroyedObjectException">
     /// Thrown when the channel has already been destroyed.
     /// </exception>
-    public void Update(float deltaTime)
+    public void Update(double deltaTime)
     {
         ThrowIfDestroyed();
 
