@@ -82,7 +82,7 @@ public abstract class Game : Destroyable
     public double DeltaTime { get; private set; }
 
     /// <summary>
-    /// Gets the current measured framerate of the game.
+    /// Gets the current measurezd framerate of the game.
     /// </summary>
     public double Framerate { get; private set; }
 
@@ -219,17 +219,6 @@ public abstract class Game : Destroyable
     /// Override this method to perform game-specific shutdown logic.
     /// </remarks>
     protected virtual void OnStop() { }
-
-    /// <summary>
-    /// Called once for each frame while the game is running.
-    /// </summary>
-    /// <param name="deltaTime">
-    /// The amount of time elapsed since the previous frame, in seconds.
-    /// </param>
-    /// <remarks>
-    /// Override this method to implement game-specific per-frame logic.
-    /// </remarks>
-    protected virtual void OnUpdate(double deltaTime) { }
 
     /// <summary>
     /// Gets a registered module of the specified type.
