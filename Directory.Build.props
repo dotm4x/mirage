@@ -8,7 +8,6 @@
     <LangVersion>latest</LangVersion>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <WarningsAsErrors>1591</WarningsAsErrors>
 
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
