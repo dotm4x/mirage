@@ -50,10 +50,7 @@ public class ChannelTest
     [Fact]
     public void Destroy_ClearsEntries()
     {
-        var channel = new Channel(
-            "test",
-            entries: [new TestUpdatable(), new TestUpdatable()]
-        );
+        var channel = new Channel("test", entries: [new TestUpdatable(), new TestUpdatable()]);
 
         channel.Destroy();
 
@@ -121,4 +118,3 @@ public class ChannelTest
         }
     }
 }
-

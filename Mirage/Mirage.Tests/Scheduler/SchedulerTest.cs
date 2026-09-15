@@ -36,8 +36,8 @@ public class SchedulerTest
         var first = new Channel("test");
         var second = new Channel("test");
 
-        Assert.Throws<InvalidOperationException>(
-            () => new Mirage.Scheduler.Scheduler(channels: [first, second])
+        Assert.Throws<InvalidOperationException>(() =>
+            new Mirage.Scheduler.Scheduler(channels: [first, second])
         );
     }
 
@@ -59,12 +59,7 @@ public class SchedulerTest
 
         var runTask = Task.Run(scheduler.Run);
 
-        Assert.True(
-            SpinWait.SpinUntil(
-                () => scheduler.DeltaTime > 0,
-                TimeSpan.FromSeconds(1)
-            )
-        );
+        Assert.True(SpinWait.SpinUntil(() => scheduler.DeltaTime > 0, TimeSpan.FromSeconds(1)));
 
         game.Stop();
 
@@ -102,34 +97,15 @@ public class SchedulerTest
     {
         var updateOrder = new List<string>();
 
-        var low = new TestChannel(
-            "low",
-            ChannelPriority.Low,
-            updateOrder
-        );
+        var low = new TestChannel("low", ChannelPriority.Low, updateOrder);
 
-        var normal = new TestChannel(
-            "normal",
-            ChannelPriority.Normal,
-            updateOrder
-        );
+        var normal = new TestChannel("normal", ChannelPriority.Normal, updateOrder);
 
-        var high = new TestChannel(
-            "high",
-            ChannelPriority.High,
-            updateOrder
-        );
+        var high = new TestChannel("high", ChannelPriority.High, updateOrder);
 
-        var critical = new TestChannel(
-            "critical",
-            ChannelPriority.Critical,
-            updateOrder
-        );
+        var critical = new TestChannel("critical", ChannelPriority.Critical, updateOrder);
 
-        var scheduler = new Mirage.Scheduler.Scheduler(
-            0,
-            [low, normal, high, critical]
-        );
+        var scheduler = new Mirage.Scheduler.Scheduler(0, [low, normal, high, critical]);
 
         var game = new TestGame(scheduler);
 
@@ -157,10 +133,7 @@ public class SchedulerTest
         lock (updateOrder)
             firstFrame = [.. updateOrder.Take(4)];
 
-        Assert.Equal(
-            ["critical", "high", "normal", "low"],
-            firstFrame
-        );
+        Assert.Equal(["critical", "high", "normal", "low"], firstFrame);
     }
 
     [Fact]
@@ -173,12 +146,7 @@ public class SchedulerTest
 
         var runTask = Task.Run(scheduler.Run);
 
-        Assert.True(
-            SpinWait.SpinUntil(
-                () => scheduler.DeltaTime > 0,
-                TimeSpan.FromSeconds(1)
-            )
-        );
+        Assert.True(SpinWait.SpinUntil(() => scheduler.DeltaTime > 0, TimeSpan.FromSeconds(1)));
 
         game.Stop();
 
