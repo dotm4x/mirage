@@ -4,5 +4,6 @@
     <Project Path="Mirage/Mirage.Sandbox/Mirage.Sandbox.csproj" />
     <Project Path="Mirage/Mirage.Scheduler/Mirage.Scheduler.csproj" />
     <Project Path="Mirage/Mirage.Tests/Mirage.Tests.csproj" />
+    <Project Path="Mirage/Mirage.Windowing/Mirage.Windowing.csproj" />
   </Folder>
 </Solution>
