@@ -124,14 +124,6 @@ public class GameTest
     }
 
     [Fact]
-    public void Start_UsesConfiguredTargetFramerate()
-    {
-        var game = new TestGame(targetFramerate: 60);
-
-        Assert.Equal(60, game.TargetFramerate);
-    }
-
-    [Fact]
     public void Start_WhenDependenciesFormCycle_Throws()
     {
         var firstModule = new TestModule("First", ["Second"]);
@@ -267,14 +259,6 @@ public class GameTest
     }
 
     [Fact]
-    public void Start_WhenTargetFramerateIsUnlimited_AllowsZero()
-    {
-        var game = new TestGame(targetFramerate: 0);
-
-        Assert.Equal(0, game.TargetFramerate);
-    }
-
-    [Fact]
     public async Task Stop_StopsModulesInReverseDependencyOrder()
     {
         var stopOrder = new List<string>();
@@ -334,10 +318,9 @@ public class GameTest
     private sealed class TestGame(
         IEnumerable<Module>? modules = null,
         CoreTelemetry? telemetry = null,
-        int targetFramerate = 0,
         Action<double>? onUpdate = null,
         int? stopAfterUpdates = null
-    ) : Game(modules ?? [], telemetry: telemetry, targetFramerate: targetFramerate)
+    ) : Game(modules ?? [], telemetry: telemetry)
     {
         private int _updates;
 
