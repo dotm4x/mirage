@@ -269,23 +269,9 @@ public class GameTest
 
     private sealed class TestGame(
         IEnumerable<Module>? modules = null,
-        CoreTelemetry? telemetry = null,
-        Action<double>? onUpdate = null,
-        int? stopAfterUpdates = null
+        CoreTelemetry? telemetry = null
     ) : Game(modules ?? [], telemetry: telemetry)
-    {
-        private int _updates;
-
-        protected override void OnUpdate(double deltaTime)
-        {
-            _updates++;
-
-            onUpdate?.Invoke(deltaTime);
-
-            if (stopAfterUpdates.HasValue && _updates >= stopAfterUpdates.Value)
-                Stop();
-        }
-    }
+    {}
 
     private sealed class TestModule(
         string identifier,
