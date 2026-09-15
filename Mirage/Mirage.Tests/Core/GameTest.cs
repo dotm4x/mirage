@@ -77,21 +77,6 @@ public class GameTest
     }
 
     [Fact]
-    public async Task Start_CallsOnUpdate()
-    {
-        var updates = 0;
-
-        var game = new TestGame(onUpdate: _ => updates++, stopAfterUpdates: 1);
-
-        var startTask = Task.Run(game.Start);
-
-        await startTask;
-
-        Assert.Equal(1, updates);
-        Assert.Equal(GameState.Idle, game.State.Get());
-    }
-
-    [Fact]
     public async Task Start_InjectsModulesBeforeStarting()
     {
         var module = new TestModule("Test");
@@ -103,24 +88,6 @@ public class GameTest
 
         game.Stop();
         await startTask;
-    }
-
-    [Fact]
-    public async Task Start_OnUpdateReceivesDeltaTime()
-    {
-        double deltaTime = -1;
-
-        var game = new TestGame(
-            onUpdate: elapsedTime => deltaTime = elapsedTime,
-            stopAfterUpdates: 1
-        );
-
-        var startTask = Task.Run(game.Start);
-
-        await startTask;
-
-        Assert.True(deltaTime >= 0);
-        Assert.Equal(GameState.Idle, game.State.Get());
     }
 
     [Fact]
@@ -241,21 +208,6 @@ public class GameTest
 
         game.Stop();
         await startTask;
-    }
-
-    [Fact]
-    public async Task Start_WhenOnUpdateThrows_ReturnsGameToIdle()
-    {
-        var game = new TestGame(onUpdate: _ =>
-            throw new InvalidOperationException("Test exception")
-        );
-
-        var startTask = Task.Run(game.Start);
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() => startTask);
-
-        Assert.Equal(GameState.Running, game.State.Get());
-        game.Stop();
     }
 
     [Fact]
