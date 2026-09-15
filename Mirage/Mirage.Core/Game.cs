@@ -32,16 +32,11 @@ public enum GameState
 }
 
 /// <summary>
-/// Coordinates the lifecycle, dependency resolution, telemetry, and main update
-/// loop of a game and its registered modules.
+/// Coordinates the lifecycle, dependency resolution, telemetry and its registered modules.
 /// </summary>
 /// <remarks>
 /// A game manages its modules by resolving their dependencies, injecting their
 /// shared context, and starting and stopping them in dependency order.
-///
-/// Once startup has completed successfully, <see cref="Start"/> enters the main
-/// game loop and repeatedly invokes <see cref="OnUpdate(double)"/> until the game
-/// is stopped.
 /// </remarks>
 public abstract class Game : Destroyable
 {
@@ -60,25 +55,14 @@ public abstract class Game : Destroyable
     /// <param name="modules">
     /// The initial modules to register.
     /// </param>
-    /// <param name="targetFramerate">
-    /// The target number of frames the game attempts to process per second.
-    /// A value of <c>0</c> disables frame-rate limiting.
-    /// </param>
     /// <param name="telemetry">
     /// The telemetry manager to use, or <see langword="null"/> to create a new
     /// instance.
     /// </param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="targetFramerate"/> is negative or not a number.
-    /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when multiple modules have the same identifier.
     /// </exception>
-    protected Game(
-        IEnumerable<Module>? modules = null,
-        double targetFramerate = 60,
-        Telemetry.Telemetry? telemetry = null
-    )
+    protected Game(IEnumerable<Module>? modules = null, Telemetry.Telemetry? telemetry = null)
     {
         Telemetry = telemetry ?? new Telemetry.Telemetry();
 
@@ -87,8 +71,6 @@ public abstract class Game : Destroyable
                 throw new InvalidOperationException(
                     $"Duplicate module identifier found: '{module.Identifier}'"
                 );
-
-        TargetFramerate = targetFramerate;
 
         Modules = _modules.AsReadOnly();
         State = _state;
@@ -113,26 +95,6 @@ public abstract class Game : Destroyable
     /// Gets a read-only view of the game's current lifecycle state.
     /// </summary>
     public IReadOnlyStore<GameState> State { get; }
-
-    /// <summary>
-    /// Gets or sets the target number of frames the game attempts to process
-    /// per second. A value of <c>0</c> disables frame-rate limiting.
-    /// </summary>
-    public double TargetFramerate
-    {
-        get;
-        private init
-        {
-            if (value is < 0 or double.NaN)
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    "Target framerate must be zero or greater."
-                );
-
-            field = value;
-        }
-    }
 
     /// <summary>
     /// Resolves the module startup order using their declared dependencies.
@@ -220,44 +182,6 @@ public abstract class Game : Destroyable
         }
     }
 
-    /// <summary>
-    /// Runs the main game update loop.
-    /// </summary>
-    /// <remarks>
-    /// The loop measures the elapsed time between frames, invokes
-    /// <see cref="OnUpdate(double)"/>, and waits for the remaining frame time
-    /// required to approach <see cref="TargetFramerate"/>.
-    ///
-    /// The loop ends when the game state is no longer
-    /// <see cref="GameState.Running"/>.
-    /// </remarks>
-    private void RunUpdateLoop()
-    {
-        var stopwatch = Stopwatch.StartNew();
-
-        var previousFrameTime = stopwatch.Elapsed.TotalSeconds;
-
-        while (_state.Get() == GameState.Running)
-        {
-            var frameDuration = TargetFramerate > 0 ? 1.0 / TargetFramerate : 0;
-            var frameStartTime = stopwatch.Elapsed.TotalSeconds;
-
-            DeltaTime = frameStartTime - previousFrameTime;
-            previousFrameTime = frameStartTime;
-
-            Framerate = DeltaTime > 0 ? 1.0 / DeltaTime : TargetFramerate;
-
-            OnUpdate(DeltaTime);
-
-            var elapsedFrameTime = stopwatch.Elapsed.TotalSeconds - frameStartTime;
-
-            var remainingFrameTime = frameDuration - elapsedFrameTime;
-
-            if (remainingFrameTime > 0)
-                Thread.Sleep(TimeSpan.FromSeconds(remainingFrameTime));
-        }
-    }
-
     /// <inheritdoc cref="Destroyable.OnDestroy"/>
     protected override void OnDestroy()
     {
@@ -326,7 +250,7 @@ public abstract class Game : Destroyable
     }
 
     /// <summary>
-    /// Starts the game, all registered modules, and the main game loop.
+    /// Starts the game, all registered modules
     /// </summary>
     /// <remarks>
     /// Module dependencies are resolved before startup. Each module receives
@@ -335,14 +259,6 @@ public abstract class Game : Destroyable
     ///
     /// After all modules have started successfully, the game transitions to
     /// <see cref="GameState.Running"/> and <see cref="OnStart"/> is invoked.
-    /// The game then enters its main update loop.
-    ///
-    /// The update loop invokes <see cref="OnUpdate(double)"/> once per frame
-    /// and attempts to maintain <see cref="TargetFramerate"/>.
-    ///
-    /// The method does not return while the game remains running.
-    /// The game loop ends when <see cref="Stop"/> changes the game state to
-    /// <see cref="GameState.Idle"/>.
     /// </remarks>
     /// <exception cref="DestroyedObjectException">
     /// Thrown when the game has already been destroyed.
@@ -402,8 +318,6 @@ public abstract class Game : Destroyable
 
             throw;
         }
-
-        RunUpdateLoop();
     }
 
     /// <summary>

@@ -1,30 +1,96 @@
-using System.Collections.ObjectModel;
 using Mirage.Core.Lifecycle;
+using Mirage.Scheduler.Interfaces;
 
 namespace Mirage.Scheduler;
 
+/// <summary>
+/// Represents the priority of a channel.
+/// </summary>
+public enum ChannelPriority
+{
+    /// <summary>
+    /// Low priority.
+    /// </summary>
+    Low,
+    /// <summary>
+    /// Normal priority.
+    /// </summary>
+    Normal,
+    /// <summary>
+    /// High priority.
+    /// </summary>
+    High,
+    /// <summary>
+    /// Critical priority.
+    /// </summary>
+    Critical,
+}
+
+/// <summary>
+/// Represents a prioritized collection of updatable entries.
+/// </summary>
 public class Channel : Destroyable
 {
-    private readonly Dictionary<string, Channel> _channels = [];
+    /// <summary>
+    /// Gets the updatable entries contained in this channel.
+    /// </summary>
+    public readonly HashSet<IUpdatable> Entries = [];
 
+    /// <summary>
+    /// Gets the unique identifier for this channel.
+    /// </summary>
     public readonly string Identifier;
 
-    public readonly ReadOnlyDictionary<string, Channel> Channels;
+    /// <summary>
+    /// Gets the priority of this channel.
+    /// </summary>
+    public readonly ChannelPriority Priority;
 
-    public Channel(string identifier, IEnumerable<Channel>? channels = null)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Channel"/> class.
+    /// </summary>
+    /// <param name="identifier">The unique identifier for the channel.</param>
+    /// <param name="priority">The priority of the channel.</param>
+    /// <param name="entries">The initial updatable entries in the channel.</param>
+    public Channel(
+        string identifier,
+        ChannelPriority priority = ChannelPriority.Normal,
+        IEnumerable<IUpdatable>? entries = null
+    )
     {
         Identifier = identifier;
+        Priority = priority;
 
-        foreach (var channel in channels ?? [])
-            if (!_channels.TryAdd(channel.Identifier, channel))
-                throw new InvalidOperationException(
-                    $"Duplicate channel identifier found: '{channel.Identifier}'"
-                );
-
-        Channels = _channels.AsReadOnly();
+        foreach (var entry in entries ?? [])
+            Entries.Add(entry);
     }
 
-    public void Update() { }
+    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    protected override void OnDestroy()
+    {
+        Entries.Clear();
+    }
 
-    protected override void OnDestroy() { }
+    /// <summary>
+    /// Called after all entries in the channel have been updated.
+    /// </summary>
+    /// <param name="deltaTime">The elapsed time since the previous update.</param>
+    protected virtual void OnUpdate(float deltaTime) { }
+
+    /// <summary>
+    /// Updates all entries in the channel.
+    /// </summary>
+    /// <param name="deltaTime">The elapsed time since the previous update.</param>
+    /// <exception cref="DestroyedObjectException">
+    /// Thrown when the channel has already been destroyed.
+    /// </exception>
+    public void Update(float deltaTime)
+    {
+        ThrowIfDestroyed();
+
+        foreach (var entry in Entries)
+            entry.Update(deltaTime);
+
+        OnUpdate(deltaTime);
+    }
 }
