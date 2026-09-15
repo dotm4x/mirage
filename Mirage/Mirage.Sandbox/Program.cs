@@ -1,30 +1,43 @@
 ﻿using Mirage.Core;
 using Mirage.Core.Telemetry;
 using Mirage.Core.Telemetry.Ports;
-using Mirage.Sandbox;
+using Mirage.Scheduler;
+using Mirage.Scheduler.Interfaces;
 
 MyGame game = new();
 game.Start();
 
-namespace Mirage.Sandbox
+internal class MyModule() : Module("MyModule")
 {
-    internal class MyModule() : Module("MyModule")
+    public void DoSomething()
     {
-        public void DoSomething()
-        {
-            Telemetry.Send("Doing something");
-        }
+        Telemetry.Send("Doing something");
     }
+}
 
-    internal class MyGame() : Game([new MyModule()], 0, new Telemetry([new ConsolePort()]))
+internal class MyUpdatable : IUpdatable
+{
+    public void Update(double deltaTime)
     {
-        private MyModule MyModule => Require<MyModule>();
+        Console.WriteLine($"{nameof(MyUpdatable)} Update");
+    }
+}
 
-        protected override void OnStart() { }
+internal class MyGame()
+    : Game(
+        modules:
+        [
+            new MyModule(),
+            new Scheduler(channels: [new Channel("main", entries: [new MyUpdatable()])]),
+        ],
+        telemetry: new Telemetry([new ConsolePort()])
+    )
+{
+    private MyModule MyModule => Require<MyModule>();
+    private Scheduler Scheduler => Require<Scheduler>();
 
-        protected override void OnUpdate(double deltaTime)
-        {
-            Telemetry.Send("Hola");
-        }
+    protected override void OnStart()
+    {
+        Scheduler.Run();
     }
 }
