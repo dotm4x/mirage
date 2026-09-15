@@ -12,14 +12,17 @@ public enum ChannelPriority
     /// Low priority.
     /// </summary>
     Low,
+
     /// <summary>
     /// Normal priority.
     /// </summary>
     Normal,
+
     /// <summary>
     /// High priority.
     /// </summary>
     High,
+
     /// <summary>
     /// Critical priority.
     /// </summary>
