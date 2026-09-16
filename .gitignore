@@ -14,6 +14,9 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Settings
+Mirage.sln.DotSettings.user
+
 # .NET Core
 project.lock.json
 project.fragment.lock.json
