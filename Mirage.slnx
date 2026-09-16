@@ -5,6 +5,6 @@
     <Project Path="Engine/Scheduler/Mirage.Scheduler.csproj" />
     <Project Path="Engine/Tests/Mirage.Tests.csproj" />
     <Project Path="Engine/Windowing/Mirage.Windowing.csproj" />
-    <Project Path="Engine/Core/Core.csproj" />
+    <Project Path="Engine/Core/Mirage.Core.csproj" />
   </Folder>
 </Solution>
