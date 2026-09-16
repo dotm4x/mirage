@@ -1,9 +1,10 @@
 <Solution>
-  <Folder Name="/Mirage/">
-    <Project Path="Mirage/Mirage.Core/Mirage.Core.csproj" />
-    <Project Path="Mirage/Mirage.Sandbox/Mirage.Sandbox.csproj" />
-    <Project Path="Mirage/Mirage.Scheduler/Mirage.Scheduler.csproj" />
-    <Project Path="Mirage/Mirage.Tests/Mirage.Tests.csproj" />
-    <Project Path="Mirage/Mirage.Windowing/Mirage.Windowing.csproj" />
+  <Folder Name="/Engine/">
+    <Project Path="Engine/Math/Mirage.Math.csproj" />
+    <Project Path="Engine/Sandbox/Mirage.Sandbox.csproj" />
+    <Project Path="Engine/Scheduler/Mirage.Scheduler.csproj" />
+    <Project Path="Engine/Tests/Mirage.Tests.csproj" />
+    <Project Path="Engine/Windowing/Mirage.Windowing.csproj" />
+    <Project Path="Engine/Core/Core.csproj" />
   </Folder>
 </Solution>
