@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mirage.Core\Core.csproj" />
-    <ProjectReference Include="..\Mirage.Scheduler\Mirage.Scheduler.csproj" />
+    <ProjectReference Include="..\Core\Mirage.Core.csproj" />
+    <ProjectReference Include="..\Scheduler\Mirage.Scheduler.csproj" />
   </ItemGroup>
 
   <ItemGroup>
