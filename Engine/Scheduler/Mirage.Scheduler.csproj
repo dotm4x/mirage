@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Mirage.Core\Core.csproj" />
+    <ProjectReference Include="..\Core\Mirage.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
