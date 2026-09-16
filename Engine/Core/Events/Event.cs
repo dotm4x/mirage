@@ -110,7 +110,11 @@ public abstract class Event<TPayload> : Destroyable, IEvent<TPayload>
 
         EventConnection<TPayload> connection = null!;
 
-        connection = new EventConnection<TPayload>(callback, persistent, () => Connections.Remove(connection));
+        connection = new EventConnection<TPayload>(
+            callback,
+            persistent,
+            () => Connections.Remove(connection)
+        );
 
         Connections.Add(connection);
 
