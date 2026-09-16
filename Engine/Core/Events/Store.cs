@@ -12,6 +12,11 @@ public interface IReadOnlyStore<TValue> : IReadOnlyEvent<TValue>
     /// Gets the current value of the store.
     /// </summary>
     TValue Get();
+
+    /// <summary>
+    /// Gets the value held by the store before the most recent change.
+    /// </summary>
+    TValue Previous { get; }
 }
 
 /// <summary>
@@ -38,10 +43,10 @@ public interface IStore<TValue> : IReadOnlyStore<TValue>, IEvent<TValue>
 ///
 /// store.Connect(value =>
 /// {
-///     Console.WriteLine($"Value changed to {value}");
+///     Console.WriteLine($"Changed from {store.Previous} to {value}.");
 /// });
 ///
-/// store.Set(5); // Logs: Value changed to 5
+/// store.Set(5); // Logs: Changed from 0 to 5.
 /// </code>
 /// </example>
 /// <remarks>
@@ -70,6 +75,11 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
     }
 
     /// <summary>
+    /// Gets the value held by the store before the most recent change.
+    /// </summary>
+    public TValue Previous { get; private set; } = value;
+
+    /// <summary>
     /// Updates the store's value and notifies listeners if the value has changed.
     /// </summary>
     /// <param name="value">The new value to set.</param>
@@ -90,6 +100,7 @@ public class Store<TValue>(TValue value, Func<TValue, TValue, bool>? equals = nu
             return;
         }
 
+        Previous = _value;
         _value = value;
 
         Dispatch(_value);
