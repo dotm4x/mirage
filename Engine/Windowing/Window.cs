@@ -11,7 +11,7 @@ public enum WindowState
 {
     Normal,
     Minimized,
-    Maximized
+    Maximized,
 }
 
 public sealed class Window : Destroyable
@@ -36,7 +36,8 @@ public sealed class Window : Destroyable
         bool opened = true,
         bool focused = false,
         bool resizable = true,
-        WindowState state = WindowState.Normal)
+        WindowState state = WindowState.Normal
+    )
     {
         Focused = new Store<bool>(focused);
         Identifier = identifier;
@@ -56,10 +57,7 @@ public sealed class Window : Destroyable
 
         _nativeWindow.Resize += arguments =>
         {
-            Size.Set(
-                new Vector2(
-                    arguments.Width,
-                    arguments.Height));
+            Size.Set(new Vector2(arguments.Width, arguments.Height));
         };
 
         _nativeWindow.FocusedChanged += arguments =>
@@ -125,8 +123,7 @@ public sealed class Window : Destroyable
         if (_nativeWindow is null)
             return;
 
-        _nativeWindow.WindowState =
-            OpenTK.Windowing.Common.WindowState.Maximized;
+        _nativeWindow.WindowState = OpenTK.Windowing.Common.WindowState.Maximized;
 
         State.Set(WindowState.Maximized);
     }
@@ -138,8 +135,7 @@ public sealed class Window : Destroyable
         if (_nativeWindow is null)
             return;
 
-        _nativeWindow.WindowState =
-            OpenTK.Windowing.Common.WindowState.Minimized;
+        _nativeWindow.WindowState = OpenTK.Windowing.Common.WindowState.Minimized;
 
         State.Set(WindowState.Minimized);
     }
@@ -155,28 +151,21 @@ public sealed class Window : Destroyable
         {
             Title = Title.Get(),
 
-            ClientSize = new Vector2i(
-                (int)Size.Get().X,
-                (int)Size.Get().Y),
+            ClientSize = new Vector2i((int)Size.Get().X, (int)Size.Get().Y),
 
             StartVisible = true,
             StartFocused = Focused.Get(),
 
             WindowState = State.Get() switch
             {
-                WindowState.Minimized =>
-                    OpenTK.Windowing.Common.WindowState.Minimized,
+                WindowState.Minimized => OpenTK.Windowing.Common.WindowState.Minimized,
 
-                WindowState.Maximized =>
-                    OpenTK.Windowing.Common.WindowState.Maximized,
+                WindowState.Maximized => OpenTK.Windowing.Common.WindowState.Maximized,
 
-                _ =>
-                    OpenTK.Windowing.Common.WindowState.Normal
+                _ => OpenTK.Windowing.Common.WindowState.Normal,
             },
 
-            WindowBorder = Resizable.Get()
-                ? WindowBorder.Resizable
-                : WindowBorder.Fixed,
+            WindowBorder = Resizable.Get() ? WindowBorder.Resizable : WindowBorder.Fixed,
 
             IsEventDriven = false,
             API = ContextAPI.OpenGL,
@@ -191,10 +180,7 @@ public sealed class Window : Destroyable
         Visible.Set(_nativeWindow.IsVisible);
         Focused.Set(_nativeWindow.IsFocused);
 
-        Size.Set(
-            new Vector2(
-                _nativeWindow.Size.X,
-                _nativeWindow.Size.Y));
+        Size.Set(new Vector2(_nativeWindow.Size.X, _nativeWindow.Size.Y));
     }
 
     public void Restore()
@@ -204,8 +190,7 @@ public sealed class Window : Destroyable
         if (_nativeWindow is null)
             return;
 
-        _nativeWindow.WindowState =
-            OpenTK.Windowing.Common.WindowState.Normal;
+        _nativeWindow.WindowState = OpenTK.Windowing.Common.WindowState.Normal;
 
         State.Set(WindowState.Normal);
     }
@@ -231,4 +216,3 @@ public sealed class Window : Destroyable
         _nativeWindow.ProcessEvents(0);
     }
 }
-

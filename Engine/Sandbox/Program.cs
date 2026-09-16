@@ -12,22 +12,15 @@ internal sealed class MyGame()
     : Game(
         modules:
         [
-            new Scheduler(
-                channels:
-                [
-                    new Channel("main")
-                ]
-            ),
-            new Windowing(
-                [
-                    new Window(
-                        title: "My Game",
-                        identifier: "main",
-                        size: new Vector2(1920, 720),
-                        opened: true
-                    )
-                ]
-            )
+            new Scheduler(channels: [new Channel("main")]),
+            new Windowing([
+                new Window(
+                    title: "My Game",
+                    identifier: "main",
+                    size: new Vector2(1920, 720),
+                    opened: true
+                ),
+            ]),
         ],
         telemetry: new Telemetry([new ConsolePort()])
     )

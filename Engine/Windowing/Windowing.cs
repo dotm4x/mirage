@@ -17,7 +17,8 @@ public sealed class Windowing : Module, IUpdatable
             if (!_windows.TryAdd(window.Identifier, window))
             {
                 throw new InvalidOperationException(
-                    $"Duplicate window identifier found: '{window.Identifier}'");
+                    $"Duplicate window identifier found: '{window.Identifier}'"
+                );
             }
         }
 
