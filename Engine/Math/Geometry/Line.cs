@@ -29,31 +29,29 @@ public readonly struct Line : IEquatable<Line>
     /// <summary>
     /// Gets a point on the line at the specified parameter.
     /// </summary>
-    public Vector3 GetPoint(double distance)
-        => Origin + Direction * distance;
+    public Vector3 GetPoint(double distance) => Origin + Direction * distance;
 
     /// <inheritdoc />
-    public bool Equals(Line other)
-        => Origin == other.Origin
-           && Direction == other.Direction;
+    public bool Equals(Line other) => Origin == other.Origin && Direction == other.Direction;
 
     /// <inheritdoc />
-    public override bool Equals(object? obj)
-        => obj is Line other && Equals(other);
+    public override bool Equals(object? obj) => obj is Line other && Equals(other);
 
     /// <inheritdoc />
-    public override int GetHashCode()
-        => HashCode.Combine(Origin, Direction);
+    public override int GetHashCode() => HashCode.Combine(Origin, Direction);
+
+    /// <summary>
+    /// Returns a string representation of the line.
+    /// </summary>
+    public override string ToString() => $"Line({Origin}, {Direction})";
 
     /// <summary>
     /// Determines whether two lines are equal.
     /// </summary>
-    public static bool operator ==(Line left, Line right)
-        => left.Equals(right);
+    public static bool operator ==(Line left, Line right) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two lines are not equal.
     /// </summary>
-    public static bool operator !=(Line left, Line right)
-        => !left.Equals(right);
+    public static bool operator !=(Line left, Line right) => !left.Equals(right);
 }

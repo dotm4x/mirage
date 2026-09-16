@@ -508,4 +508,13 @@ public readonly struct Matrix4 : IEquatable<Matrix4>
             HashCode.Combine(M31, M32, M33, M34),
             HashCode.Combine(M41, M42, M43, M44)
         );
+
+    /// <summary>
+    /// Returns a string representation of the matrix.
+    /// </summary>
+    public override string ToString() =>
+        $"Matrix4(({M11}, {M12}, {M13}, {M14}), "
+        + $"({M21}, {M22}, {M23}, {M24}), "
+        + $"({M31}, {M32}, {M33}, {M34}), "
+        + $"({M41}, {M42}, {M43}, {M44}))";
 }

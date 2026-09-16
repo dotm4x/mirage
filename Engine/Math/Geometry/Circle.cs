@@ -29,50 +29,45 @@ public readonly struct Circle : IEquatable<Circle>
     /// <summary>
     /// Gets the diameter of the circle.
     /// </summary>
-    public double Diameter
-        => Radius * 2;
+    public double Diameter => Radius * 2;
 
     /// <summary>
     /// Gets the circumference of the circle.
     /// </summary>
-    public double Circumference
-        => 2 * System.Math.PI * Radius;
+    public double Circumference => 2 * System.Math.PI * Radius;
 
     /// <summary>
     /// Gets the area of the circle.
     /// </summary>
-    public double Area
-        => System.Math.PI * Radius * Radius;
+    public double Area => System.Math.PI * Radius * Radius;
 
     /// <summary>
     /// Determines whether a point is inside or on the circle.
     /// </summary>
-    public bool Contains(Vector2 point)
-        => Vector2.DistanceSquared(Center, point)
-            <= Radius * Radius;
+    public bool Contains(Vector2 point) =>
+        Vector2.DistanceSquared(Center, point) <= Radius * Radius;
 
     /// <inheritdoc />
-    public bool Equals(Circle other)
-        => Center == other.Center
-        && Radius == other.Radius;
+    public bool Equals(Circle other) => Center == other.Center && Radius == other.Radius;
 
     /// <inheritdoc />
-    public override bool Equals(object? obj)
-        => obj is Circle other && Equals(other);
+    public override bool Equals(object? obj) => obj is Circle other && Equals(other);
 
     /// <inheritdoc />
-    public override int GetHashCode()
-        => HashCode.Combine(Center, Radius);
+    public override int GetHashCode() => HashCode.Combine(Center, Radius);
+
+    /// <summary>
+    /// Returns a string representation of the circle.
+    /// </summary>
+    public override string ToString() => $"Circle({Center}, {Radius})";
 
     /// <summary>
     /// Determines whether two circles are equal.
     /// </summary>
-    public static bool operator ==(Circle left, Circle right)
-        => left.Equals(right);
+    public static bool operator ==(Circle left, Circle right) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two circles are not equal.
     /// </summary>
-    public static bool operator !=(Circle left, Circle right)
-        => !left.Equals(right);
+    public static bool operator !=(Circle left, Circle right) => !left.Equals(right);
 }
