@@ -3,6 +3,5 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Mirage.Core</RootNamespace>
   </PropertyGroup>
 </Project>

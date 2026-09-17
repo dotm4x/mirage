@@ -1,8 +1,8 @@
-using Mirage.Core.Events;
+using Mirage.Common.Events;
 
 namespace Mirage.Tests.Core.Utilities.Events;
 
-using Mirage.Core.Lifecycle;
+using Common.Lifecycle;
 using Xunit;
 
 public class StoreTest

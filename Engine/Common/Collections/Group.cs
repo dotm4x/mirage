@@ -1,9 +1,9 @@
 using System.Collections;
-using Mirage.Core.Events;
-using Mirage.Core.Lifecycle;
-using Mirage.Core.Primitives;
+using Mirage.Common.Events;
+using Mirage.Common.Lifecycle;
+using Mirage.Common.Primitives;
 
-namespace Mirage.Core.Collections;
+namespace Mirage.Common.Collections;
 
 /// <summary>
 /// Provides read-only access to the items in a group.

@@ -1,7 +1,7 @@
 namespace Mirage.Tests.Core.Modules;
 
-using Mirage.Core;
-using Mirage.Core.Lifecycle;
+using Common;
+using Common.Lifecycle;
 using Xunit;
 
 public class ModuleTest

@@ -1,6 +1,6 @@
-using Mirage.Core.Lifecycle;
+using Mirage.Common.Lifecycle;
 
-namespace Mirage.Core.Events;
+namespace Mirage.Common.Events;
 
 /// <summary>
 /// Represents a dispatcher for specific events, allowing listeners to be notified

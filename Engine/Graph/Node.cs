@@ -1,6 +1,6 @@
-﻿using Mirage.Core.Collections;
-using Mirage.Core.Events;
-using Mirage.Core.Lifecycle;
+﻿using Mirage.Common.Collections;
+using Mirage.Common.Events;
+using Mirage.Common.Lifecycle;
 
 namespace Mirage.Graph;
 

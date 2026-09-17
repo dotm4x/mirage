@@ -1,4 +1,4 @@
-namespace Mirage.Core.Lifecycle;
+namespace Mirage.Common.Lifecycle;
 
 /// <summary>
 /// Provides read-only access to the lifecycle state of a destroyable object.

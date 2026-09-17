@@ -1,4 +1,4 @@
-namespace Mirage.Core.Telemetry;
+namespace Mirage.Common.Telemetry;
 
 /// <summary>
 /// Represents the severity level or classification of a telemetry message.

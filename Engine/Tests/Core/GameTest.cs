@@ -1,6 +1,6 @@
-using Mirage.Core;
-using Mirage.Core.Lifecycle;
-using CoreTelemetry = Mirage.Core.Telemetry.Telemetry;
+using Mirage.Common;
+using Mirage.Common.Lifecycle;
+using CoreTelemetry = Mirage.Common.Telemetry.Telemetry;
 
 namespace Mirage.Tests.Core;
 
@@ -270,7 +270,7 @@ public class GameTest
     private sealed class TestGame(
         IEnumerable<Module>? modules = null,
         CoreTelemetry? telemetry = null
-    ) : Game(modules ?? [], telemetry: telemetry) { }
+    ) : Game(modules ?? [], telemetry: telemetry) {}
 
     private sealed class TestModule(
         string identifier,

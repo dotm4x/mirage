@@ -1,6 +1,6 @@
-using Mirage.Core.Lifecycle;
+using Mirage.Common.Lifecycle;
 
-namespace Mirage.Core.Telemetry.Ports;
+namespace Mirage.Common.Telemetry.Ports;
 
 /// <summary>
 /// Defines the execution or sorting priority levels for telemetry ports.

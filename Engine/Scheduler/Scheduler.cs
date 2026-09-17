@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Mirage.Core;
+using Mirage.Common;
 
 namespace Mirage.Scheduler;
 

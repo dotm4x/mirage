@@ -1,6 +1,6 @@
-using Mirage.Core.Lifecycle;
+using Mirage.Common.Lifecycle;
 
-namespace Mirage.Core.Events;
+namespace Mirage.Common.Events;
 
 /// <summary>
 /// Provides read-only access to a store.
@@ -9,14 +9,14 @@ namespace Mirage.Core.Events;
 public interface IReadOnlyStore<TValue> : IReadOnlyEvent<TValue>
 {
     /// <summary>
-    /// Gets the current value of the store.
-    /// </summary>
-    TValue Get();
-
-    /// <summary>
     /// Gets the value held by the store before the most recent change.
     /// </summary>
     TValue Previous { get; }
+
+    /// <summary>
+    /// Gets the current value of the store.
+    /// </summary>
+    TValue Get();
 }
 
 /// <summary>

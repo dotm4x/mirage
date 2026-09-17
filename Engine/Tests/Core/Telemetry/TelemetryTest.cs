@@ -1,8 +1,8 @@
 namespace Mirage.Tests.Core.Telemetry;
 
-using Mirage.Core.Lifecycle;
-using Mirage.Core.Telemetry;
-using Mirage.Core.Telemetry.Ports;
+using Common.Lifecycle;
+using Common.Telemetry;
+using Common.Telemetry.Ports;
 using Xunit;
 
 public class TelemetryTest

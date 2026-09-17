@@ -1,6 +1,6 @@
-using Mirage.Core.Lifecycle;
+using Mirage.Common.Lifecycle;
 
-namespace Mirage.Core.Telemetry.Ports;
+namespace Mirage.Common.Telemetry.Ports;
 
 /// <summary>
 /// Represents a console-based telemetry output port that formats and writes

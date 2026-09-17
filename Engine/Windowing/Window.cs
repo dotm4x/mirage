@@ -1,6 +1,6 @@
-using Mirage.Core;
-using Mirage.Core.Events;
-using Mirage.Core.Lifecycle;
+using Mirage.Common;
+using Mirage.Common.Events;
+using Mirage.Common.Lifecycle;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;

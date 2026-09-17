@@ -1,6 +1,6 @@
-using Mirage.Core.Lifecycle;
+using Mirage.Common.Lifecycle;
 
-namespace Mirage.Core.Events;
+namespace Mirage.Common.Events;
 
 /// <summary>
 /// Represents an active connection between an event and a callback.

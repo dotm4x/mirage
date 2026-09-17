@@ -1,4 +1,4 @@
-namespace Mirage.Core.Lifecycle;
+namespace Mirage.Common.Lifecycle;
 
 /// <summary>
 /// Defines an object that can restore its state.

@@ -1,8 +1,8 @@
-using Mirage.Core.Collections;
+using Mirage.Common.Collections;
 
 namespace Mirage.Tests.Core.Utilities.Collections;
 
-using Mirage.Core.Lifecycle;
+using Common.Lifecycle;
 using Xunit;
 
 public class GroupTest

@@ -1,4 +1,4 @@
-using Mirage.Core;
+using Mirage.Common;
 using Mirage.Scheduler;
 using Mirage.Scheduler.Interfaces;
 

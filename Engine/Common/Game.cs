@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using Mirage.Core.Events;
-using Mirage.Core.Lifecycle;
-using Mirage.Core.Telemetry;
+using Mirage.Common.Events;
+using Mirage.Common.Lifecycle;
+using Mirage.Common.Telemetry;
 
-namespace Mirage.Core;
+namespace Mirage.Common;
 
 /// <summary>
 /// Represents the current lifecycle state of a game.

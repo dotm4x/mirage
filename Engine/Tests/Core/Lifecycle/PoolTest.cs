@@ -1,4 +1,4 @@
-using Mirage.Core.Lifecycle;
+using Mirage.Common.Lifecycle;
 
 namespace Mirage.Tests.Core.Lifecycle;
 

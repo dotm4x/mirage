@@ -1,9 +1,9 @@
-using Mirage.Core.Collections;
-using Mirage.Core.Events;
-using Mirage.Core.Lifecycle;
-using Mirage.Core.Telemetry.Ports;
+using Mirage.Common.Collections;
+using Mirage.Common.Events;
+using Mirage.Common.Lifecycle;
+using Mirage.Common.Telemetry.Ports;
 
-namespace Mirage.Core.Telemetry;
+namespace Mirage.Common.Telemetry;
 
 /// <summary>
 /// Represents a telemetry manager responsible for collecting, organizing,
