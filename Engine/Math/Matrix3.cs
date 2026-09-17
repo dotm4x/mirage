@@ -202,7 +202,7 @@ public readonly struct Matrix3 : IEquatable<Matrix3>
         double cosine = System.Math.Cos(angle);
         double sine = System.Math.Sin(angle);
 
-        return new(cosine, -sine, 0, sine, cosine, 0, 0, 0, 1);
+        return new Matrix3(cosine, -sine, 0, sine, cosine, 0, 0, 0, 1);
     }
 
     /// <summary>
@@ -227,7 +227,7 @@ public readonly struct Matrix3 : IEquatable<Matrix3>
         {
             double determinant = Determinant;
 
-            return new(
+            return new Matrix3(
                 (M22 * M33 - M23 * M32) / determinant,
                 (M13 * M32 - M12 * M33) / determinant,
                 (M12 * M23 - M13 * M22) / determinant,
