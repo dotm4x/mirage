@@ -1,4 +1,4 @@
-namespace Mirage.Tests.Common.Modules;
+namespace Mirage.Tests.Common;
 
 using Mirage.Common;
 using Mirage.Common.Lifecycle;
