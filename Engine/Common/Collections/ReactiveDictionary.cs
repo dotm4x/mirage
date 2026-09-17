@@ -10,8 +10,7 @@ namespace Mirage.Common.Collections;
 /// </summary>
 /// <typeparam name="TKey">The type of keys stored in the reactive dictionary.</typeparam>
 /// <typeparam name="TValue">The type of values stored in the reactive dictionary.</typeparam>
-public interface IReadOnlyReactiveDictionary<TKey, TValue>
-    : IEnumerable<KeyValuePair<TKey, TValue>>
+public interface IReadOnlyReactiveDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
     where TKey : notnull
 {
     /// <summary>
@@ -206,7 +205,6 @@ public class ReactiveDictionary<TKey, TValue>
     public TValue this[TKey key]
     {
         get => _items[key];
-
         set
         {
             ThrowIfDestroyed();

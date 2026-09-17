@@ -269,7 +269,7 @@ public class GameTest
     private sealed class TestGame(
         IEnumerable<Module>? modules = null,
         Mirage.Common.Telemetry.Telemetry? telemetry = null
-    ) : Game(modules ?? [], telemetry: telemetry) {}
+    ) : Game(modules ?? [], telemetry: telemetry) { }
 
     private sealed class TestModule(
         string identifier,

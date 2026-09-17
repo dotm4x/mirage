@@ -39,10 +39,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Add_WhenKeyAlreadyExists_Throws()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         Assert.Throws<ArgumentException>(() => dictionary.Add("one", 2));
     }
@@ -54,7 +51,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
         var fired = false;
 
@@ -72,7 +69,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
         var events = new List<string>();
 
@@ -81,10 +78,7 @@ public class ReactiveDictionaryTest
 
         dictionary.Clear();
 
-        Assert.Equal(
-            ["Clear", "Remove:one", "Remove:two", "Remove:three"],
-            events
-        );
+        Assert.Equal(["Clear", "Remove:one", "Remove:two", "Remove:three"], events);
     }
 
     [Fact]
@@ -94,7 +88,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
         var removed = new List<KeyValuePair<string, int>>();
 
@@ -106,7 +100,7 @@ public class ReactiveDictionaryTest
             [
                 new KeyValuePair<string, int>("one", 1),
                 new KeyValuePair<string, int>("two", 2),
-                new KeyValuePair<string, int>("three", 3)
+                new KeyValuePair<string, int>("three", 3),
             ],
             removed
         );
@@ -119,7 +113,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
 
         dictionary.Clear();
@@ -151,7 +145,7 @@ public class ReactiveDictionaryTest
         {
             new KeyValuePair<string, int>("one", 1),
             new KeyValuePair<string, int>("two", 2),
-            new KeyValuePair<string, int>("three", 3)
+            new KeyValuePair<string, int>("three", 3),
         };
 
         var dictionary = new ReactiveDictionary<string, int>(items);
@@ -163,10 +157,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void ContainsKey_WhenKeyDoesNotExist_ReturnsFalse()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         Assert.False(dictionary.ContainsKey("two"));
     }
@@ -174,10 +165,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void ContainsKey_WhenKeyExists_ReturnsTrue()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         Assert.True(dictionary.ContainsKey("one"));
     }
@@ -185,10 +173,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void ContainsValue_WhenValueDoesNotExist_ReturnsFalse()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         Assert.False(dictionary.ContainsValue(2));
     }
@@ -196,10 +181,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void ContainsValue_WhenValueExists_ReturnsTrue()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         Assert.True(dictionary.ContainsValue(1));
     }
@@ -211,7 +193,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
 
         dictionary.Destroy();
@@ -226,14 +208,14 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
 
         Assert.Equal(
             [
                 new KeyValuePair<string, int>("one", 1),
                 new KeyValuePair<string, int>("two", 2),
-                new KeyValuePair<string, int>("three", 3)
+                new KeyValuePair<string, int>("three", 3),
             ],
             dictionary.ToArray()
         );
@@ -246,7 +228,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
         var visited = new List<KeyValuePair<string, int>>();
 
@@ -256,7 +238,7 @@ public class ReactiveDictionaryTest
             [
                 new KeyValuePair<string, int>("one", 1),
                 new KeyValuePair<string, int>("two", 2),
-                new KeyValuePair<string, int>("three", 3)
+                new KeyValuePair<string, int>("three", 3),
             ],
             visited
         );
@@ -273,10 +255,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Indexer_Get_WhenKeyExists_ReturnsValue()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         Assert.Equal(1, dictionary["one"]);
     }
@@ -305,10 +284,8 @@ public class ReactiveDictionaryTest
     public void Indexer_Set_WhenKeyDoesNotExist_DoesNotFireOnUpdate()
     {
         var dictionary = new ReactiveDictionary<string, int>();
-        var updated = new List<(
-            KeyValuePair<string, int> Previous,
-            KeyValuePair<string, int> Current
-        )>();
+        var updated =
+            new List<(KeyValuePair<string, int> Previous, KeyValuePair<string, int> Current)>();
 
         dictionary.OnUpdate.Connect(updated.Add);
 
@@ -333,10 +310,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Indexer_Set_WhenKeyExists_DoesNotFireOnAdd()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
         var added = new List<KeyValuePair<string, int>>();
 
         dictionary.OnAdd.Connect(added.Add);
@@ -349,26 +323,16 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Indexer_Set_WhenKeyExists_FiresOnUpdate()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
-        var updated = new List<(
-            KeyValuePair<string, int> Previous,
-            KeyValuePair<string, int> Current
-        )>();
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
+        var updated =
+            new List<(KeyValuePair<string, int> Previous, KeyValuePair<string, int> Current)>();
 
         dictionary.OnUpdate.Connect(updated.Add);
 
         dictionary["one"] = 2;
 
         Assert.Equal(
-            [
-                (
-                    new KeyValuePair<string, int>("one", 1),
-                    new KeyValuePair<string, int>("one", 2)
-                )
-            ],
+            [(new KeyValuePair<string, int>("one", 1), new KeyValuePair<string, int>("one", 2))],
             updated
         );
     }
@@ -376,10 +340,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Indexer_Set_WhenKeyExists_UpdatesValue()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         dictionary["one"] = 2;
 
@@ -391,10 +352,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Remove_WhenDestroyed_Throws()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
         dictionary.Destroy();
 
         Assert.Throws<DestroyedObjectException>(() => dictionary.Remove("one"));
@@ -403,10 +361,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Remove_WhenKeyDoesNotExist_DoesNotFireOnRemove()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
         var removed = new List<KeyValuePair<string, int>>();
 
         dictionary.OnRemove.Connect(removed.Add);
@@ -419,10 +374,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Remove_WhenKeyDoesNotExist_ReturnsFalse()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         var result = dictionary.Remove("two");
 
@@ -437,7 +389,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
         var removed = new List<KeyValuePair<string, int>>();
 
@@ -451,10 +403,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void Remove_WhenKeyExists_ReturnsTrue()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         var result = dictionary.Remove("one");
 
@@ -469,7 +418,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
 
         var result = dictionary.ToArray();
@@ -479,7 +428,7 @@ public class ReactiveDictionaryTest
             [
                 new KeyValuePair<string, int>("one", 1),
                 new KeyValuePair<string, int>("two", 2),
-                new KeyValuePair<string, int>("three", 3)
+                new KeyValuePair<string, int>("three", 3),
             ],
             dictionary.ToArray()
         );
@@ -492,7 +441,7 @@ public class ReactiveDictionaryTest
         {
             { "one", 1 },
             { "two", 2 },
-            { "three", 3 }
+            { "three", 3 },
         };
 
         var result = dictionary.ToList();
@@ -504,10 +453,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void TryGetValue_WhenKeyDoesNotExist_ReturnsFalse()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         var result = dictionary.TryGetValue("two", out var value);
 
@@ -518,10 +464,7 @@ public class ReactiveDictionaryTest
     [Fact]
     public void TryGetValue_WhenKeyExists_ReturnsTrueAndValue()
     {
-        var dictionary = new ReactiveDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dictionary = new ReactiveDictionary<string, int> { { "one", 1 } };
 
         var result = dictionary.TryGetValue("one", out var value);
 
