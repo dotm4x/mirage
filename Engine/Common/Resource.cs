@@ -8,4 +8,4 @@ namespace Mirage.Common;
 /// <remarks>
 /// A resource can be destroyed when it is no longer needed.
 /// </remarks>
-public abstract class Resource : Destroyable {}
+public abstract class Resource : Destroyable { }

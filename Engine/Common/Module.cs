@@ -1,5 +1,5 @@
-using Mirage.Common.Lifecycle;
 using Mirage.Common.Events;
+using Mirage.Common.Lifecycle;
 using Mirage.Common.Telemetry;
 
 namespace Mirage.Common;

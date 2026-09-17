@@ -270,7 +270,7 @@ public class GameTest
     private sealed class TestGame(
         IEnumerable<Module>? modules = null,
         CoreTelemetry? telemetry = null
-    ) : Game(modules ?? [], telemetry: telemetry) {}
+    ) : Game(modules ?? [], telemetry: telemetry) { }
 
     private sealed class TestModule(
         string identifier,
