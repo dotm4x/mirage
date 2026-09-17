@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="Sandbox/Mirage.Sandbox.csproj" />
+  <Project Path="Sandbox/Sandbox.csproj" />
   <Folder Name="/Engine/">
     <Project Path="Engine/Scheduler/Mirage.Scheduler.csproj" />
     <Project Path="Engine/Tests/Mirage.Tests.csproj" />
