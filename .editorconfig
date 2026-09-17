@@ -1,2 +1,5 @@
 [*.cs]
 resharper_member_can_be_private_global_highlighting = none
+resharper_unused_member_global_highlighting = none
+resharper_unused_member_in_super_global_highlighting = none
+resharper_unused_auto_property_accessor_global_highlighting = none
