@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\Core\Mirage.Core.csproj" />
+    <ProjectReference Include="..\Graph\Mirage.Graph.csproj" />
     <ProjectReference Include="..\Math\Mirage.Math.csproj" />
     <ProjectReference Include="..\Scheduler\Mirage.Scheduler.csproj" />
     <ProjectReference Include="..\Windowing\Mirage.Windowing.csproj" />
