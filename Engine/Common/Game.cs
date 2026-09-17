@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Mirage.Common.Events;
 using Mirage.Common.Lifecycle;
 using Mirage.Common.Telemetry;
@@ -75,16 +74,6 @@ public abstract class Game : Destroyable
         Modules = _modules.AsReadOnly();
         State = _state;
     }
-
-    /// <summary>
-    /// Gets the amount of time elapsed since the previous frame, in seconds.
-    /// </summary>
-    public double DeltaTime { get; private set; }
-
-    /// <summary>
-    /// Gets the current measurezd framerate of the game.
-    /// </summary>
-    public double Framerate { get; private set; }
 
     /// <summary>
     /// Gets the modules registered in the game, indexed by identifier.
