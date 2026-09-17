@@ -306,6 +306,16 @@ public class Node : Destroyable
     public readonly Store<Node?> Parent;
 
     /// <summary>
+    /// Gets a value indicating whether the node persists independently of
+    /// recursive parent lifecycle operations.
+    /// </summary>
+    /// <remarks>
+    /// Persistent nodes are not automatically loaded or unloaded as part of
+    /// their parent's recursive lifecycle operations.
+    /// </remarks>
+    public readonly bool Persistent;
+
+    /// <summary>
     /// Gets the collection of nodes directly contained by this node.
     /// </summary>
     public readonly NodeGroup Subnodes;
@@ -321,6 +331,10 @@ public class Node : Destroyable
     /// <param name="name">
     /// The initial name of the node.
     /// </param>
+    /// <param name="persistent">
+    /// Whether the node should persist independently of recursive parent
+    /// lifecycle operations.
+    /// </param>
     /// <param name="parent">
     /// The initial parent of the node, or <see langword="null"/> to create a
     /// root node.
@@ -333,11 +347,14 @@ public class Node : Destroyable
     /// </param>
     public Node(
         string name,
+        bool persistent = false,
         Node? parent = null,
         IEnumerable<Node>? subnodes = null,
         IEnumerable<string>? tags = null
     )
     {
+        Persistent = persistent;
+
         Name = new Store<string>(name);
         Parent = new Store<Node?>(null);
         Subnodes = new NodeGroup(this);
@@ -454,11 +471,14 @@ public class Node : Destroyable
     }
 
     /// <summary>
-    /// Loads the node and all of its subnodes.
+    /// Loads the node and all non-persistent subnodes.
     /// </summary>
     /// <remarks>
     /// The node must not already be loaded. If the node has a parent, that
     /// parent must be loaded first.
+    ///
+    /// Persistent subnodes are not automatically loaded as part of this
+    /// operation.
     ///
     /// <see cref="OnLoad"/> is invoked before the node enters the loaded state.
     /// Subnodes are loaded after their parent.
@@ -488,7 +508,12 @@ public class Node : Destroyable
         Loaded = true;
 
         foreach (var node in Subnodes)
+        {
+            if (node.Persistent)
+                continue;
+
             node.Load();
+        }
     }
 
     /// <summary>
@@ -503,12 +528,14 @@ public class Node : Destroyable
     }
 
     /// <summary>
-    /// Unloads the node and all of its subnodes.
+    /// Unloads the node and all non-persistent subnodes.
     /// </summary>
     /// <remarks>
+    /// Persistent subnodes remain loaded when their parent is unloaded.
+    ///
     /// Subnodes are unloaded before their parent. <see cref="OnUnload"/> is
-    /// invoked after all subnodes have been unloaded and before this node
-    /// leaves the loaded state.
+    /// invoked after all non-persistent subnodes have been unloaded and before
+    /// this node leaves the loaded state.
     /// </remarks>
     /// <exception cref="DestroyedObjectException">
     /// Thrown when the node has already been destroyed.
@@ -524,7 +551,12 @@ public class Node : Destroyable
             throw new InvalidOperationException($"{this} is not loaded");
 
         foreach (var node in Subnodes)
+        {
+            if (node.Persistent)
+                continue;
+
             node.Unload();
+        }
 
         OnUnload();
 
