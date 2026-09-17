@@ -363,11 +363,13 @@ public class Node : Destroyable
         Subnodes.OnAdd.Connect(OnSubnodeAdded);
         Subnodes.OnRemove.Connect(OnSubnodeRemoved);
 
-        if (parent is not null)
-            Parent.Set(parent);
+        ComposeNodes();
 
         foreach (var node in subnodes ?? [])
             Subnodes.Add(node);
+
+        if (parent is not null)
+            Parent.Set(parent);
 
         foreach (var tag in tags ?? [])
             Tags.Add(tag);
@@ -398,6 +400,12 @@ public class Node : Destroyable
         }
     }
 
+    private void ComposeNodes()
+    {
+        foreach (var node in Compose())
+            Subnodes.Add(node);
+    }
+
     private void OnParentChanged(Node? parent)
     {
         var previous = Parent.Previous;
@@ -419,6 +427,23 @@ public class Node : Destroyable
     {
         if (node.Parent.Get() == this)
             node.Parent.Set(null);
+    }
+
+    /// <summary>
+    /// Composes the subnodes belonging to this node.
+    /// </summary>
+    /// <returns>
+    /// An enumerable sequence containing the subnodes to create for this node.
+    /// </returns>
+    /// <remarks>
+    /// The default implementation does not compose any subnodes.
+    ///
+    /// Composed subnodes are added before subnodes supplied directly to the
+    /// constructor.
+    /// </remarks>
+    protected virtual IEnumerable<Node> Compose()
+    {
+        yield break;
     }
 
     /// <inheritdoc />
