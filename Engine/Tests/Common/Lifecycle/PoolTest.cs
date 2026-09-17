@@ -1,6 +1,6 @@
 using Mirage.Common.Lifecycle;
 
-namespace Mirage.Tests.Core.Lifecycle;
+namespace Mirage.Tests.Common.Lifecycle;
 
 public class PoolTest
 {

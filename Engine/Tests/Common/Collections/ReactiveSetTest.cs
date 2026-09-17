@@ -1,8 +1,9 @@
 using Mirage.Common.Collections;
+using Mirage.Common.Lifecycle;
 
-namespace Mirage.Tests.Core.Utilities.Collections;
+namespace Mirage.Tests.Common.Collections;
 
-using Common.Lifecycle;
+using Mirage.Common.Lifecycle;
 using Xunit;
 
 public class ReactiveSetTest

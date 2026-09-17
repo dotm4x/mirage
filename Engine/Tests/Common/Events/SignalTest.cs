@@ -1,8 +1,8 @@
 using Mirage.Common.Events;
 
-namespace Mirage.Tests.Core.Utilities.Events;
+namespace Mirage.Tests.Common.Events;
 
-using Common.Lifecycle;
+using Mirage.Common.Lifecycle;
 using Xunit;
 
 public class SignalTest

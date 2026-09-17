@@ -1,6 +1,6 @@
-namespace Mirage.Tests.Core.Lifecycle;
+namespace Mirage.Tests.Common.Lifecycle;
 
-using Common.Lifecycle;
+using Mirage.Common.Lifecycle;
 
 public class DestroyableTests
 {
