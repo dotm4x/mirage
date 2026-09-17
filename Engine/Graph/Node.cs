@@ -359,9 +359,9 @@ public class Node : Destroyable
         Parent = new Store<Node?>(null);
         Subnodes = new NodeGroup(this);
 
-        Parent.Connect(OnParentChanged);
-        Subnodes.OnAdd.Connect(OnSubnodeAdded);
-        Subnodes.OnRemove.Connect(OnSubnodeRemoved);
+        Parent.Connect(OnParentChanged, true);
+        Subnodes.OnAdd.Connect(OnSubnodeAdded, true);
+        Subnodes.OnRemove.Connect(OnSubnodeRemoved, true);
 
         ComposeNodes();
 
