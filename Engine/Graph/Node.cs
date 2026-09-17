@@ -411,7 +411,6 @@ public class Node : Destroyable
             Unload();
 
         Parent.Set(null);
-        Parent.Destroy();
         Name.Destroy();
 
         foreach (var node in Subnodes.ToArray())
