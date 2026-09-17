@@ -5,12 +5,12 @@ namespace Mirage.Tests.Core.Utilities.Collections;
 using Common.Lifecycle;
 using Xunit;
 
-public class GroupTest
+public class ReactiveSetTest
 {
     [Fact]
     public void Add_WhenDestroyed_Throws()
     {
-        var group = new Group<int>();
+        var group = new ReactiveSet<int>();
         group.Destroy();
 
         Assert.Throws<DestroyedObjectException>((Func<int[]>)Action);
@@ -25,7 +25,7 @@ public class GroupTest
     [Fact]
     public void Add_WhenItemAlreadyExists_Throws()
     {
-        var group = new Group<int> { 1 };
+        var group = new ReactiveSet<int> { 1 };
 
         Assert.Throws<InvalidOperationException>((Func<int[]>)Action);
         return;
@@ -39,7 +39,7 @@ public class GroupTest
     [Fact]
     public void Add_WhenItemIsAdded_FiresOnAdd()
     {
-        var group = new Group<int>();
+        var group = new ReactiveSet<int>();
         var received = new List<int>();
 
         group.OnAdd.Connect(received.Add);
@@ -52,7 +52,7 @@ public class GroupTest
     [Fact]
     public void Add_WhenLimitIsOne_KeepsOnlyNewestItem()
     {
-        var group = new Group<int>(limit: 1) { 1, 2, 3 };
+        var group = new ReactiveSet<int>(limit: 1) { 1, 2, 3 };
 
         Assert.Equal(1, group.Count);
         Assert.Equal([3], [.. group]);
@@ -61,7 +61,7 @@ public class GroupTest
     [Fact]
     public void Add_WhenLimitIsReached_FiresOnRemoveBeforeOnAdd()
     {
-        var group = new Group<int>(limit: 2) { 1, 2 };
+        var group = new ReactiveSet<int>(limit: 2) { 1, 2 };
         var events = new List<string>();
 
         group.OnRemove.Connect(item => events.Add($"Remove:{item}"));
@@ -75,7 +75,7 @@ public class GroupTest
     [Fact]
     public void Add_WhenLimitIsReached_FiresOnRemoveForTruncatedItem()
     {
-        var group = new Group<int>(limit: 2) { 1, 2 };
+        var group = new ReactiveSet<int>(limit: 2) { 1, 2 };
         var removed = new List<int>();
 
         group.OnRemove.Connect(removed.Add);
@@ -88,7 +88,7 @@ public class GroupTest
     [Fact]
     public void Add_WhenLimitIsReached_RemovesOldestItem()
     {
-        var group = new Group<int>(limit: 2) { { 1, 2 }, 3 };
+        var group = new ReactiveSet<int>(limit: 2) { { 1, 2 }, 3 };
 
         Assert.Equal(2, group.Count);
         Assert.Equal([2, 3], [.. group]);
@@ -97,7 +97,7 @@ public class GroupTest
     [Fact]
     public void Add_WhenLimitIsZero_AllowsUnlimitedItems()
     {
-        var group = new Group<int>(limit: 0) { { 1, 2, 3, 4, 5 } };
+        var group = new ReactiveSet<int>(limit: 0) { { 1, 2, 3, 4, 5 } };
 
         Assert.Equal(5, group.Count);
         Assert.Equal([1, 2, 3, 4, 5], [.. group]);
@@ -106,7 +106,7 @@ public class GroupTest
     [Fact]
     public void Add_WithItems_AddsItemsAndReturnsThem()
     {
-        var group = new Group<int>();
+        var group = new ReactiveSet<int>();
         var items = new[] { 1, 2, 3 };
 
         var result = group.Add(items);
@@ -119,7 +119,7 @@ public class GroupTest
     [Fact]
     public void Clear_FiresOnClear()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
         var fired = false;
 
         group.OnClear.Connect(_ => fired = true);
@@ -132,7 +132,7 @@ public class GroupTest
     [Fact]
     public void Clear_FiresOnClearBeforeOnRemove()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
         var events = new List<string>();
 
         group.OnClear.Connect(_ => events.Add("Clear"));
@@ -146,7 +146,7 @@ public class GroupTest
     [Fact]
     public void Clear_FiresOnRemoveForEveryItem()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
         var removed = new List<int>();
 
         group.OnRemove.Connect(removed.Add);
@@ -159,7 +159,7 @@ public class GroupTest
     [Fact]
     public void Clear_RemovesAllItems()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
 
         group.Clear();
 
@@ -170,7 +170,7 @@ public class GroupTest
     [Fact]
     public void Clear_WhenDestroyed_Throws()
     {
-        var group = new Group<int>();
+        var group = new ReactiveSet<int>();
         group.Destroy();
 
         var action = group.Clear;
@@ -179,9 +179,9 @@ public class GroupTest
     }
 
     [Fact]
-    public void Constructor_WhenNoItemsProvided_CreatesEmptyGroup()
+    public void Constructor_WhenNoItemsProvided_CreatesEmptyReactiveSet()
     {
-        var group = new Group<int>();
+        var group = new ReactiveSet<int>();
 
         Assert.Equal(0, group.Count);
         Assert.Equal(0, group.Limit);
@@ -192,7 +192,7 @@ public class GroupTest
     {
         var items = new[] { 1, 2, 3 };
 
-        var group = new Group<int>(items);
+        var group = new ReactiveSet<int>(items);
 
         Assert.Equal(3, group.Count);
         Assert.Equal(items, group.ToArray());
@@ -203,19 +203,19 @@ public class GroupTest
     {
         const int limit = -1;
 
-        Assert.Throws<ArgumentOutOfRangeException>((Func<Group<int>>)Action);
+        Assert.Throws<ArgumentOutOfRangeException>((Func<ReactiveSet<int>>)Action);
         return;
 
-        static Group<int> Action()
+        static ReactiveSet<int> Action()
         {
-            return new Group<int>(limit: limit);
+            return new ReactiveSet<int>(limit: limit);
         }
     }
 
     [Fact]
     public void Contains_WhenItemDoesNotExist_ReturnsFalse()
     {
-        var group = new Group<int> { 42 };
+        var group = new ReactiveSet<int> { 42 };
 
         var result = group.Contains(10);
 
@@ -225,7 +225,7 @@ public class GroupTest
     [Fact]
     public void Contains_WhenItemExists_ReturnsTrue()
     {
-        var group = new Group<int> { 42 };
+        var group = new ReactiveSet<int> { 42 };
 
         var result = group.Contains(42);
 
@@ -233,9 +233,9 @@ public class GroupTest
     }
 
     [Fact]
-    public void Destroy_ClearsGroupAndMarksItAsDestroyed()
+    public void Destroy_ClearsReactiveSetAndMarksItAsDestroyed()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
 
         group.Destroy();
 
@@ -246,7 +246,7 @@ public class GroupTest
     [Fact]
     public void Enumeration_ReturnsItemsInInsertionOrder()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
 
         var result = group.ToList();
 
@@ -256,7 +256,7 @@ public class GroupTest
     [Fact]
     public void ForEach_VisitsEveryItem()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
 
         var visited = new List<int>();
 
@@ -268,7 +268,7 @@ public class GroupTest
     [Fact]
     public void Remove_WhenDestroyed_Throws()
     {
-        var group = new Group<int> { 1 };
+        var group = new ReactiveSet<int> { 1 };
         group.Destroy();
 
         Assert.Throws<DestroyedObjectException>(Action);
@@ -283,7 +283,7 @@ public class GroupTest
     [Fact]
     public void Remove_WhenItemDoesNotExist_Throws()
     {
-        var group = new Group<int> { 1 };
+        var group = new ReactiveSet<int> { 1 };
 
         Assert.Throws<InvalidOperationException>(Action);
         return;
@@ -297,7 +297,7 @@ public class GroupTest
     [Fact]
     public void Remove_WhenItemExists_FiresOnRemove()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
         var removed = new List<int>();
 
         group.OnRemove.Connect(removed.Add);
@@ -310,7 +310,7 @@ public class GroupTest
     [Fact]
     public void Remove_WhenMultipleItemsExist_FiresOnRemoveForEachItem()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
         var removed = new List<int>();
 
         group.OnRemove.Connect(removed.Add);
@@ -323,7 +323,7 @@ public class GroupTest
     [Fact]
     public void Remove_WithExistingItem_RemovesItem()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
 
         group.Remove(2);
 
@@ -334,7 +334,7 @@ public class GroupTest
     [Fact]
     public void ToArray_ReturnsCopyOfItems()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
 
         var result = group.ToArray();
         result[0] = 99;
@@ -345,7 +345,7 @@ public class GroupTest
     [Fact]
     public void ToList_ReturnsCopyOfItems()
     {
-        var group = new Group<int> { { 1, 2, 3 } };
+        var group = new ReactiveSet<int> { { 1, 2, 3 } };
 
         var result = group.ToList();
         result.Clear();

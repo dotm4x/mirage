@@ -42,7 +42,7 @@ public class TelemetryTest
     }
 
     [Fact]
-    public void Destroy_DestroysPortsGroup()
+    public void Destroy_DestroysPortsReactiveSet()
     {
         var telemetry = new Telemetry([new TestPort()]);
 

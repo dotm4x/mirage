@@ -9,11 +9,11 @@ namespace Mirage.Graph;
 /// </summary>
 /// <param name="owner">The node that owns this collection.</param>
 /// <remarks>
-/// In addition to the standard <see cref="Group{TItem}"/> collection operations,
+/// In addition to the standard <see cref="ReactiveSet{TItem}"/> collection operations,
 /// this class provides methods for locating nodes by identifier, name, path, or tag.
 /// Searches can optionally include descendant nodes recursively.
 /// </remarks>
-public class NodeGroup(Node owner) : Group<Node>
+public class NodeReactiveSet(Node owner) : ReactiveSet<Node>
 {
     private readonly Node _owner = owner;
 
@@ -318,12 +318,12 @@ public class Node : Destroyable
     /// <summary>
     /// Gets the collection of nodes directly contained by this node.
     /// </summary>
-    public readonly NodeGroup Subnodes;
+    public readonly NodeReactiveSet Subnodes;
 
     /// <summary>
     /// Gets the tags assigned to this node.
     /// </summary>
-    public readonly Group<string> Tags = [];
+    public readonly ReactiveSet<string> Tags = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Node"/> class.
@@ -357,7 +357,7 @@ public class Node : Destroyable
 
         Name = new Store<string>(name);
         Parent = new Store<Node?>(null);
-        Subnodes = new NodeGroup(this);
+        Subnodes = new NodeReactiveSet(this);
 
         Parent.Connect(OnParentChanged, true);
         Subnodes.OnAdd.Connect(OnSubnodeAdded, true);

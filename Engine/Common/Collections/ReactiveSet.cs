@@ -6,42 +6,42 @@ using Mirage.Common.Primitives;
 namespace Mirage.Common.Collections;
 
 /// <summary>
-/// Provides read-only access to the items in a group.
+/// Provides read-only access to the items in a reactive set.
 /// </summary>
-/// <typeparam name="TItem">The type of items stored in the group.</typeparam>
-public interface IReadOnlyGroup<TItem> : IEnumerable<TItem>
+/// <typeparam name="TItem">The type of items stored in the reactive set.</typeparam>
+public interface IReadOnlyReactiveSet<TItem> : IEnumerable<TItem>
 {
     /// <summary>
-    /// Gets the number of items currently contained in the group.
+    /// Gets the number of items currently contained in the reactive set.
     /// </summary>
     int Count { get; }
 
     /// <summary>
-    /// Determines whether the specified item is contained in the group.
+    /// Determines whether the specified item is contained in the reactive set.
     /// </summary>
     /// <param name="item">The item to locate.</param>
     /// <returns>
-    /// <see langword="true"/> if the item is contained in the group; otherwise,
+    /// <see langword="true"/> if the item is contained in the reactive set; otherwise,
     /// <see langword="false"/>.
     /// </returns>
     bool Contains(TItem item);
 
     /// <summary>
-    /// Performs the specified action on each item in the group.
+    /// Performs the specified action on each item in the reactive set.
     /// </summary>
     /// <param name="action">The action to perform for each item.</param>
     void ForEach(Action<TItem> action);
 
     /// <summary>
-    /// Creates an array containing all items in the group.
+    /// Creates an array containing all items in the reactive set.
     /// </summary>
-    /// <returns>A new array containing the items in the group.</returns>
+    /// <returns>A new array containing the items in the reactive set.</returns>
     TItem[] ToArray();
 
     /// <summary>
-    /// Creates a list containing all items in the group.
+    /// Creates a list containing all items in the reactive set.
     /// </summary>
-    /// <returns>A new list containing the items in the group.</returns>
+    /// <returns>A new list containing the items in the reactive set.</returns>
     List<TItem> ToList();
 }
 
@@ -49,8 +49,8 @@ public interface IReadOnlyGroup<TItem> : IEnumerable<TItem>
 /// Represents a mutable collection of unique items, providing reactive events
 /// and an optional capacity limit with automatic truncation.
 /// </summary>
-/// <typeparam name="TItem">The type of items stored in the group.</typeparam>
-public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
+/// <typeparam name="TItem">The type of items stored in the reactive set.</typeparam>
+public class ReactiveSet<TItem> : Destroyable, IReadOnlyReactiveSet<TItem>
 {
     private readonly List<TItem> _items = [];
     private readonly Signal<TItem> _onAdd = new();
@@ -58,26 +58,26 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     private readonly Signal<TItem> _onRemove = new();
 
     /// <summary>
-    /// Gets the maximum number of items allowed in the group. A value of
+    /// Gets the maximum number of items allowed in the reactive set. A value of
     /// <c>0</c> indicates unlimited capacity.
     /// </summary>
     public readonly int Limit;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Group{TItem}"/> class.
+    /// Initializes a new instance of the <see cref="ReactiveSet{TItem}"/> class.
     /// </summary>
     /// <param name="items">
-    /// The initial items to add to the group, or <see langword="null"/> to
+    /// The initial items to add to the reactive set, or <see langword="null"/> to
     /// start empty.
     /// </param>
     /// <param name="limit">
-    /// The maximum number of items allowed in the group.
+    /// The maximum number of items allowed in the reactive set.
     /// A value of <c>0</c> means unlimited capacity.
     /// </param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="limit"/> is negative.
     /// </exception>
-    public Group(IEnumerable<TItem>? items = null, int limit = 0)
+    public ReactiveSet(IEnumerable<TItem>? items = null, int limit = 0)
     {
         if (limit < 0)
             throw new ArgumentOutOfRangeException(nameof(limit), "Limit cannot be negative");
@@ -93,26 +93,26 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     }
 
     /// <summary>
-    /// Gets the event fired whenever an item is added to the group.
+    /// Gets the event fired whenever an item is added to the reactive set.
     /// </summary>
     public IReadOnlyEvent<TItem> OnAdd { get; }
 
     /// <summary>
-    /// Gets the event fired when the group is cleared.
+    /// Gets the event fired when the reactive set is cleared.
     /// </summary>
     public IReadOnlyEvent<Unit> OnClear { get; }
 
     /// <summary>
-    /// Gets the event fired whenever an item is removed from the group.
+    /// Gets the event fired whenever an item is removed from the reactive set.
     /// </summary>
     public IReadOnlyEvent<TItem> OnRemove { get; }
 
     /// <summary>
-    /// Determines whether the specified item is contained in the group.
+    /// Determines whether the specified item is contained in the reactive set.
     /// </summary>
     /// <param name="item">The item to locate.</param>
     /// <returns>
-    /// <see langword="true"/> if the item is contained in the group; otherwise,
+    /// <see langword="true"/> if the item is contained in the reactive set; otherwise,
     /// <see langword="false"/>.
     /// </returns>
     public bool Contains(TItem item)
@@ -121,12 +121,12 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     }
 
     /// <summary>
-    /// Gets the number of items currently contained in the group.
+    /// Gets the number of items currently contained in the reactive set.
     /// </summary>
     public int Count => _items.Count;
 
     /// <summary>
-    /// Performs the specified action on each item in the group.
+    /// Performs the specified action on each item in the reactive set.
     /// </summary>
     /// <param name="action">The action to perform for each item.</param>
     public void ForEach(Action<TItem> action)
@@ -136,36 +136,36 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     }
 
     /// <summary>
-    /// Returns an enumerator that iterates through the items in the group.
+    /// Returns an enumerator that iterates through the items in the reactive set.
     /// </summary>
-    /// <returns>An enumerator for the group.</returns>
+    /// <returns>An enumerator for the reactive set.</returns>
     public IEnumerator<TItem> GetEnumerator()
     {
         return _items.GetEnumerator();
     }
 
     /// <summary>
-    /// Returns an enumerator that iterates through the items in the group.
+    /// Returns an enumerator that iterates through the items in the reactive set.
     /// </summary>
-    /// <returns>An enumerator for the group.</returns>
+    /// <returns>An enumerator for the reactive set.</returns>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
 
     /// <summary>
-    /// Creates an array containing all items in the group.
+    /// Creates an array containing all items in the reactive set.
     /// </summary>
-    /// <returns>A new array containing the items in the group.</returns>
+    /// <returns>A new array containing the items in the reactive set.</returns>
     public TItem[] ToArray()
     {
         return [.. _items];
     }
 
     /// <summary>
-    /// Creates a list containing all items in the group.
+    /// Creates a list containing all items in the reactive set.
     /// </summary>
-    /// <returns>A new list containing the items in the group.</returns>
+    /// <returns>A new list containing the items in the reactive set.</returns>
     public List<TItem> ToList()
     {
         return [.. _items];
@@ -188,15 +188,15 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     }
 
     /// <summary>
-    /// Adds one or more items to the group.
+    /// Adds one or more items to the reactive set.
     /// </summary>
     /// <param name="items">The items to add.</param>
     /// <returns>The items that were added.</returns>
     /// <exception cref="DestroyedObjectException">
-    /// Thrown when the group has been destroyed.
+    /// Thrown when the reactive set has been destroyed.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when an item is already contained in the group.
+    /// Thrown when an item is already contained in the reactive set.
     /// </exception>
     public TItem[] Add(params TItem[] items)
     {
@@ -206,7 +206,7 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
         {
             if (_items.Contains(item))
                 throw new InvalidOperationException(
-                    "Item is already in the group, cannot add again"
+                    "Item is already in the reactive set, cannot add again"
                 );
 
             Truncate();
@@ -218,10 +218,10 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     }
 
     /// <summary>
-    /// Removes all items from the group.
+    /// Removes all items from the reactive set.
     /// </summary>
     /// <exception cref="DestroyedObjectException">
-    /// Thrown when the group has been destroyed.
+    /// Thrown when the reactive set has been destroyed.
     /// </exception>
     public void Clear()
     {
@@ -234,14 +234,14 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
     }
 
     /// <summary>
-    /// Removes one or more items from the group.
+    /// Removes one or more items from the reactive set.
     /// </summary>
     /// <param name="items">The items to remove.</param>
     /// <exception cref="DestroyedObjectException">
-    /// Thrown when the group has been destroyed.
+    /// Thrown when the reactive set has been destroyed.
     /// </exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when an item is not contained in the group.
+    /// Thrown when an item is not contained in the reactive set.
     /// </exception>
     public void Remove(params TItem[] items)
     {
@@ -250,7 +250,9 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
         foreach (var item in items)
         {
             if (!_items.Contains(item))
-                throw new InvalidOperationException("Item is not in the group, cannot remove");
+                throw new InvalidOperationException(
+                    "Item is not in the reactive set, cannot remove"
+                );
 
             _onRemove.Fire(item);
             _items.Remove(item);

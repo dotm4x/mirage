@@ -16,7 +16,7 @@ public sealed class Telemetry : Destroyable
     /// <summary>
     /// Gets the registered telemetry output ports.
     /// </summary>
-    public readonly Group<IPort> Ports = [];
+    public readonly ReactiveSet<IPort> Ports = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Telemetry"/> class.
