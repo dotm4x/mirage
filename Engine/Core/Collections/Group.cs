@@ -177,7 +177,7 @@ public class Group<TItem> : Destroyable, IReadOnlyGroup<TItem>
             Remove(_items[0]);
     }
 
-    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    /// <inheritdoc />
     protected override void OnDestroy()
     {
         Clear();

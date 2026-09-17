@@ -140,7 +140,7 @@ public abstract class Event<TPayload> : Destroyable, IEvent<TPayload>
             connection.Callback(payload);
     }
 
-    /// <inheritdoc cref="IDestroyable.Destroy"/>
+    /// <inheritdoc />
     protected override void OnDestroy()
     {
         Connections.Clear();

@@ -73,7 +73,7 @@ public abstract class Destroyable : IDestroyable
         Destroyed = true;
     }
 
-    /// <inheritdoc cref="IDestroyable.Destroyed"/>
+    /// <inheritdoc />
     public bool Destroyed { get; private set; }
 
     private string GetTypeName()

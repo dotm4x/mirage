@@ -125,7 +125,7 @@ public abstract class Module : Destroyable
     /// </summary>
     public IReadOnlyStore<ModuleState> State { get; }
 
-    /// <inheritdoc cref="IDestroyable.Destroy"/>
+    /// <inheritdoc />
     protected override void OnDestroy()
     {
         if (_state.Get() != ModuleState.Idle)

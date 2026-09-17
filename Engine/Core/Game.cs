@@ -182,7 +182,7 @@ public abstract class Game : Destroyable
         }
     }
 
-    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    /// <inheritdoc />
     protected override void OnDestroy()
     {
         var currentState = _state.Get();

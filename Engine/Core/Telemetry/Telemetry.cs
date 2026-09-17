@@ -37,7 +37,7 @@ public sealed class Telemetry : Destroyable
     /// </summary>
     public IReadOnlyEvent<Message> OnSend { get; }
 
-    /// <inheritdoc cref="Destroyable.Destroy"/>
+    /// <inheritdoc />
     protected override void OnDestroy()
     {
         foreach (var port in Ports)

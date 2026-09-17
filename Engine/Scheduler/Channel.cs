@@ -68,7 +68,7 @@ public class Channel : Destroyable
             Entries.Add(entry);
     }
 
-    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    /// <inheritdoc />
     protected override void OnDestroy()
     {
         Entries.Clear();

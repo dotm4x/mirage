@@ -77,7 +77,7 @@ public sealed class Window : Destroyable
         };
     }
 
-    /// <inheritdoc cref="Destroyable.OnDestroy"/>
+    /// <inheritdoc />
     protected override void OnDestroy()
     {
         Close();
