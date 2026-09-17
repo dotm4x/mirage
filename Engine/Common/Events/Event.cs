@@ -52,6 +52,11 @@ public interface IReadOnlyEvent<TPayload> : IReadOnlyDestroyable
 public interface IEvent<TPayload> : IReadOnlyEvent<TPayload>, IDestroyable
 {
     /// <summary>
+    /// Gets a value indicating whether the event has been destroyed.
+    /// </summary>
+    new bool Destroyed { get; }
+
+    /// <summary>
     /// Clears event connections. By default, removes only non-persistent connections.
     /// </summary>
     /// <param name="force">
@@ -108,13 +113,15 @@ public abstract class Event<TPayload> : Destroyable, IEvent<TPayload>
     {
         ThrowIfDestroyed();
 
-        EventConnection<TPayload> connection = null!;
+        var connectionHolder = new EventConnection<TPayload>?[1];
 
-        connection = new EventConnection<TPayload>(
+        EventConnection<TPayload> connection = new(
             callback,
             persistent,
-            () => Connections.Remove(connection)
+            () => Connections.Remove(connectionHolder[0]!)
         );
+
+        connectionHolder[0] = connection;
 
         Connections.Add(connection);
 
