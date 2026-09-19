@@ -16,6 +16,8 @@ namespace Mirage.Graph;
 public class NodeReactiveSet(Node owner) : ReactiveSet<Node>
 {
     private readonly Node _owner = owner;
+    private bool _composed;
+    private bool _restoringParent;
 
     /// <summary>
     /// Gets a node by its unique identifier.
@@ -285,6 +287,10 @@ public class NodeReactiveSet(Node owner) : ReactiveSet<Node>
 /// </remarks>
 public class Node : Destroyable
 {
+    private bool _composed;
+
+    private bool _restoringParent;
+
     /// <summary>
     /// Gets the unique identifier of the node.
     /// </summary>
@@ -408,7 +414,30 @@ public class Node : Destroyable
 
     private void OnParentChanged(Node? parent)
     {
+        if (_restoringParent)
+            return;
+
         var previous = Parent.Previous;
+
+        try
+        {
+            ValidateParent(parent);
+        }
+        catch
+        {
+            _restoringParent = true;
+
+            try
+            {
+                Parent.Set(previous);
+            }
+            finally
+            {
+                _restoringParent = false;
+            }
+
+            throw;
+        }
 
         if (previous is not null && previous.Subnodes.Contains(this))
             previous.Subnodes.Remove(this);
@@ -421,27 +450,62 @@ public class Node : Destroyable
 
         var shouldBeLoaded = parent?.Loaded == true;
 
-        switch (shouldBeLoaded)
-        {
-            case true when !Loaded:
-                Load();
-                break;
-            case false when Loaded:
-                Unload();
-                break;
-        }
+        if (shouldBeLoaded && !Loaded)
+            Load();
+        else if (!shouldBeLoaded && Loaded)
+            Unload();
     }
 
     private void OnSubnodeAdded(Node node)
     {
-        if (node.Parent.Get() != this)
+        if (node.Parent.Get() == this)
+            return;
+
+        try
+        {
             node.Parent.Set(this);
+        }
+        catch
+        {
+            if (Subnodes.Contains(node))
+                Subnodes.Remove(node);
+
+            throw;
+        }
     }
 
     private void OnSubnodeRemoved(Node node)
     {
         if (node.Parent.Get() == this)
             node.Parent.Set(null);
+    }
+
+    private void ValidateParent(Node? parent)
+    {
+        if (parent is null)
+            return;
+
+        if (ReferenceEquals(parent, this))
+            throw new InvalidOperationException($"{this} cannot be its own parent.");
+
+        HashSet<Node> visited = [];
+
+        for (var ancestor = parent; ancestor is not null; ancestor = ancestor.Parent.Get())
+        {
+            if (ReferenceEquals(ancestor, this))
+            {
+                throw new InvalidOperationException(
+                    $"Cannot set {parent} as the parent of {this} because it would create a cycle."
+                );
+            }
+
+            if (!visited.Add(ancestor))
+            {
+                throw new InvalidOperationException(
+                    $"Cannot assign {parent} because its hierarchy already contains a cycle."
+                );
+            }
+        }
     }
 
     /// <summary>
