@@ -41,6 +41,8 @@ public abstract class Game : Destroyable
 {
     private readonly Dictionary<string, Module> _modules = [];
     private readonly Store<GameState> _state = new(GameState.Idle);
+    private bool _composed;
+    private bool _injected;
     private IReadOnlyList<Module>? _moduleOrder;
 
     /// <summary>
@@ -65,42 +67,20 @@ public abstract class Game : Destroyable
     {
         Telemetry = telemetry ?? new Telemetry.Telemetry();
 
-        ComposeModules();
-
         foreach (var module in modules ?? [])
+        {
+            ArgumentNullException.ThrowIfNull(module);
+
             if (!_modules.TryAdd(module.Identifier, module))
+            {
                 throw new InvalidOperationException(
-                    $"Duplicate module identifier found: '{module.Identifier}'"
+                    $"Duplicate module identifier found: '{module.Identifier}'."
                 );
+            }
+        }
 
         Modules = _modules.AsReadOnly();
         State = _state;
-    }
-
-    /// <summary>
-    /// Composes the modules belonging to this game.
-    /// </summary>
-    /// <returns>
-    /// An enumerable sequence containing the modules to register for this game.
-    /// </returns>
-    /// <remarks>
-    /// The default implementation does not compose any services.
-    ///
-    /// Composed modules are registered before modules supplied directly to the
-    /// constructor.
-    /// </remarks>
-    protected virtual IEnumerable<Module> Compose()
-    {
-        yield break;
-    }
-
-    private void ComposeModules()
-    {
-        foreach (var module in Compose())
-            if (!_modules.TryAdd(module.Identifier, module))
-                throw new InvalidOperationException(
-                    $"Duplicate module identifier found: '{module.Identifier}'"
-                );
     }
 
     /// <summary>
@@ -112,6 +92,39 @@ public abstract class Game : Destroyable
     /// Gets a read-only view of the game's current lifecycle state.
     /// </summary>
     public IReadOnlyStore<GameState> State { get; }
+
+    private void ComposeModules()
+    {
+        if (_composed)
+            return;
+
+        var composedModules = Compose().ToArray();
+        Dictionary<string, Module> pendingModules = [];
+
+        foreach (var module in composedModules)
+        {
+            ArgumentNullException.ThrowIfNull(module);
+
+            if (_modules.ContainsKey(module.Identifier))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate module identifier found: '{module.Identifier}'."
+                );
+            }
+
+            if (!pendingModules.TryAdd(module.Identifier, module))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate composed module identifier found: '{module.Identifier}'."
+                );
+            }
+        }
+
+        foreach (var module in pendingModules)
+            _modules.Add(module.Key, module.Value);
+
+        _composed = true;
+    }
 
     /// <summary>
     /// Resolves the module startup order using their declared dependencies.
@@ -199,6 +212,23 @@ public abstract class Game : Destroyable
         }
     }
 
+    /// <summary>
+    /// Composes the modules belonging to this game.
+    /// </summary>
+    /// <returns>
+    /// An enumerable sequence containing the modules to register for this game.
+    /// </returns>
+    /// <remarks>
+    /// The default implementation does not compose any services.
+    ///
+    /// Composed modules are registered before modules supplied directly to the
+    /// constructor.
+    /// </remarks>
+    protected virtual IEnumerable<Module> Compose()
+    {
+        yield break;
+    }
+
     /// <inheritdoc />
     protected override void OnDestroy()
     {
@@ -280,9 +310,11 @@ public abstract class Game : Destroyable
         var currentState = _state.Get();
 
         if (currentState != GameState.Idle)
+        {
             throw new InvalidOperationException(
-                $"Game cannot be started from state '{currentState}'"
+                $"Game cannot be started from state '{currentState}'."
             );
+        }
 
         _state.Set(GameState.Starting);
 
@@ -292,16 +324,23 @@ public abstract class Game : Destroyable
 
         try
         {
+            ComposeModules();
+
             var sortedModules = ResolveModuleOrder();
 
-            ModuleContext context = new()
+            if (!_injected)
             {
-                Telemetry = Telemetry,
-                Modules = new ModuleContainer(sortedModules),
-            };
+                ModuleContext context = new()
+                {
+                    Telemetry = Telemetry,
+                    Modules = new ModuleContainer(sortedModules),
+                };
 
-            foreach (var module in sortedModules)
-                module.Inject(context);
+                foreach (var module in sortedModules)
+                    module.Inject(context);
+
+                _injected = true;
+            }
 
             foreach (var module in sortedModules)
             {
@@ -316,7 +355,7 @@ public abstract class Game : Destroyable
 
             Telemetry.Send("Game is now running", "Game");
         }
-        catch (Exception)
+        catch
         {
             RollbackStartedModules(startedModules);
 

@@ -16,8 +16,6 @@ namespace Mirage.Graph;
 public class NodeReactiveSet(Node owner) : ReactiveSet<Node>
 {
     private readonly Node _owner = owner;
-    private bool _composed;
-    private bool _restoringParent;
 
     /// <summary>
     /// Gets a node by its unique identifier.
@@ -369,8 +367,6 @@ public class Node : Destroyable
         Subnodes.OnAdd.Connect(OnSubnodeAdded, true);
         Subnodes.OnRemove.Connect(OnSubnodeRemoved, true);
 
-        ComposeNodes();
-
         foreach (var node in subnodes ?? [])
             Subnodes.Add(node);
 
@@ -406,10 +402,17 @@ public class Node : Destroyable
         }
     }
 
-    private void ComposeNodes()
+    private void EnsureComposed()
     {
-        foreach (var node in Compose())
+        if (_composed)
+            return;
+
+        var composedNodes = Compose().ToArray();
+
+        foreach (var node in composedNodes)
             Subnodes.Add(node);
+
+        _composed = true;
     }
 
     private void OnParentChanged(Node? parent)
@@ -517,8 +520,10 @@ public class Node : Destroyable
     /// <remarks>
     /// The default implementation does not compose any subnodes.
     ///
-    /// Composed subnodes are added before subnodes supplied directly to the
-    /// constructor.
+    /// Composition occurs once, immediately before the node is loaded for the
+    /// first time. All composed subnodes are therefore available to
+    /// <see cref="OnLoad"/>. Later load cycles reuse the same subnodes and do
+    /// not invoke this method again.
     /// </remarks>
     protected virtual IEnumerable<Node> Compose()
     {
@@ -606,6 +611,8 @@ public class Node : Destroyable
             throw new InvalidOperationException(
                 $"{this} cannot be loaded because its parent is not loaded."
             );
+
+        EnsureComposed();
 
         OnLoad();
 
