@@ -90,6 +90,48 @@ public class GameTest
     }
 
     [Fact]
+    public void Start_ComposesModulesBeforeStarting()
+    {
+        var composed = new TestModule("Composed");
+        var game = new TestGame(composedModules: [composed]);
+
+        game.Start();
+
+        Assert.Same(composed, game.Modules["Composed"]);
+        Assert.True(composed.WasInjected);
+
+        game.Stop();
+    }
+
+    [Fact]
+    public void Start_ComposesModulesOnlyOnce()
+    {
+        var composed = new TestModule("Composed");
+        var game = new TestGame(composedModules: [composed]);
+
+        game.Start();
+        game.Stop();
+        game.Start();
+
+        Assert.Equal(1, game.ComposeCalls);
+
+        game.Stop();
+    }
+
+    [Fact]
+    public void Start_WhenComposedModuleDuplicatesRegisteredModule_Throws()
+    {
+        var registered = new TestModule("Test");
+        var composed = new TestModule("Test");
+        var game = new TestGame([registered], composedModules: [composed]);
+
+        Assert.Throws<InvalidOperationException>(game.Start);
+
+        Assert.Equal(GameState.Idle, game.State.Get());
+        Assert.Same(registered, game.Modules["Test"]);
+    }
+
+    [Fact]
     public void Start_WhenDependenciesFormCycle_Throws()
     {
         var firstModule = new TestModule("First", ["Second"]);
@@ -268,8 +310,20 @@ public class GameTest
 
     private sealed class TestGame(
         IEnumerable<Module>? modules = null,
-        Mirage.Common.Telemetry.Telemetry? telemetry = null
-    ) : Game(modules ?? [], telemetry: telemetry) { }
+        Mirage.Common.Telemetry.Telemetry? telemetry = null,
+        IEnumerable<Module>? composedModules = null
+    ) : Game(modules ?? [], telemetry: telemetry)
+    {
+        private readonly IEnumerable<Module> _composedModules = composedModules ?? [];
+
+        public int ComposeCalls { get; private set; }
+
+        protected override IEnumerable<Module> Compose()
+        {
+            ComposeCalls++;
+            return _composedModules;
+        }
+    }
 
     private sealed class TestModule(
         string identifier,
