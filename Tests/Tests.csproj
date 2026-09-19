@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../Engine/Common/Mirage.Common.csproj" />
+    <ProjectReference Include="../Engine/Graph/Mirage.Graph.csproj" />
     <ProjectReference Include="../Engine/Scheduler\Mirage.Scheduler.csproj" />
   </ItemGroup>
 </Project>
