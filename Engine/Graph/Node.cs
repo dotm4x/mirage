@@ -415,6 +415,16 @@ public class Node : Destroyable
 
         if (parent is not null && !parent.Subnodes.Contains(this))
             parent.Subnodes.Add(this);
+
+        if (Persistent)
+            return;
+
+        var shouldBeLoaded = parent?.Loaded == true;
+
+        if (shouldBeLoaded && !Loaded)
+            Load();
+        else if (!shouldBeLoaded && Loaded)
+            Unload();
     }
 
     private void OnSubnodeAdded(Node node)
