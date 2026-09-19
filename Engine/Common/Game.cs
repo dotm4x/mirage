@@ -65,6 +65,8 @@ public abstract class Game : Destroyable
     {
         Telemetry = telemetry ?? new Telemetry.Telemetry();
 
+        ComposeModules();
+
         foreach (var module in modules ?? [])
             if (!_modules.TryAdd(module.Identifier, module))
                 throw new InvalidOperationException(
@@ -73,6 +75,32 @@ public abstract class Game : Destroyable
 
         Modules = _modules.AsReadOnly();
         State = _state;
+    }
+
+    /// <summary>
+    /// Composes the modules belonging to this game.
+    /// </summary>
+    /// <returns>
+    /// An enumerable sequence containing the modules to register for this game.
+    /// </returns>
+    /// <remarks>
+    /// The default implementation does not compose any services.
+    ///
+    /// Composed modules are registered before modules supplied directly to the
+    /// constructor.
+    /// </remarks>
+    protected virtual IEnumerable<Module> Compose()
+    {
+        yield break;
+    }
+
+    private void ComposeModules()
+    {
+        foreach (var module in Compose())
+            if (!_modules.TryAdd(module.Identifier, module))
+                throw new InvalidOperationException(
+                    $"Duplicate module identifier found: '{module.Identifier}'"
+                );
     }
 
     /// <summary>
