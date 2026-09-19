@@ -421,10 +421,15 @@ public class Node : Destroyable
 
         var shouldBeLoaded = parent?.Loaded == true;
 
-        if (shouldBeLoaded && !Loaded)
-            Load();
-        else if (!shouldBeLoaded && Loaded)
-            Unload();
+        switch (shouldBeLoaded)
+        {
+            case true when !Loaded:
+                Load();
+                break;
+            case false when Loaded:
+                Unload();
+                break;
+        }
     }
 
     private void OnSubnodeAdded(Node node)
