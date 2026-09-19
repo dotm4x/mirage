@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Common\Mirage.Common.csproj" />
-    <ProjectReference Include="..\Scheduler\Mirage.Scheduler.csproj" />
+    <ProjectReference Include="../Engine/Common/Mirage.Common.csproj" />
+    <ProjectReference Include="../Engine/Scheduler\Mirage.Scheduler.csproj" />
   </ItemGroup>
 </Project>

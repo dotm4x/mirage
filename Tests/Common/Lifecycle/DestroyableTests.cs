@@ -1,4 +1,4 @@
-namespace Mirage.Tests.Common.Lifecycle;
+namespace Tests.Common.Lifecycle;
 
 using Mirage.Common.Lifecycle;
 

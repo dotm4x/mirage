@@ -1,6 +1,6 @@
 using Mirage.Common.Events;
 
-namespace Mirage.Tests.Common.Events;
+namespace Tests.Common.Events;
 
 using Mirage.Common.Lifecycle;
 using Xunit;

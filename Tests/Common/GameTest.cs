@@ -1,7 +1,7 @@
 using Mirage.Common;
 using Mirage.Common.Lifecycle;
 
-namespace Mirage.Tests.Common;
+namespace Tests.Common;
 
 public class GameTest
 {

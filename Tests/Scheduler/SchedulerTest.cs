@@ -2,7 +2,7 @@ using Mirage.Common;
 using Mirage.Scheduler;
 using Mirage.Scheduler.Interfaces;
 
-namespace Mirage.Tests.Scheduler;
+namespace Tests.Scheduler;
 
 public class SchedulerTest
 {

@@ -1,6 +1,6 @@
 using Mirage.Common.Lifecycle;
 
-namespace Mirage.Tests.Common.Telemetry;
+namespace Tests.Common.Telemetry;
 
 using Mirage.Common.Telemetry;
 using Mirage.Common.Telemetry.Ports;

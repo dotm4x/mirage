@@ -1,7 +1,7 @@
 using Mirage.Common.Collections;
 using Mirage.Common.Lifecycle;
 
-namespace Mirage.Tests.Common.Collections;
+namespace Tests.Common.Collections;
 
 using Mirage.Common.Lifecycle;
 using Xunit;
