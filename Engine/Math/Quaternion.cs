@@ -117,7 +117,7 @@ public readonly struct Quaternion(double x = 0, double y = 0, double z = 0, doub
     /// <summary>
     /// Creates a quaternion from an axis and an angle in radians.
     /// </summary>
-    public static Quaternion FromAxisAngle(Vector3 axis, double angle)
+    public static Quaternion FromAxisAngle(Vector3D axis, double angle)
     {
         var halfAngle = angle / 2;
         var sine = System.Math.Sin(halfAngle);
@@ -157,12 +157,12 @@ public readonly struct Quaternion(double x = 0, double y = 0, double z = 0, doub
     /// <summary>
     /// Rotates a vector by this quaternion.
     /// </summary>
-    public Vector3 Transform(Vector3 value)
+    public Vector3D Transform(Vector3D value)
     {
         Quaternion vector = new(value.X, value.Y, value.Z, 0);
         var result = this * vector * Inversed;
 
-        return new Vector3(result.X, result.Y, result.Z);
+        return new Vector3D(result.X, result.Y, result.Z);
     }
 
     /// <summary>

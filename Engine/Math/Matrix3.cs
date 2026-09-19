@@ -176,7 +176,7 @@ public readonly struct Matrix3 : IEquatable<Matrix3>
     /// <summary>
     /// Transforms a vector by a matrix.
     /// </summary>
-    public static Vector3 operator *(Matrix3 matrix, Vector3 vector) =>
+    public static Vector3D operator *(Matrix3 matrix, Vector3D vector) =>
         new(
             matrix.M11 * vector.X + matrix.M12 * vector.Y + matrix.M13 * vector.Z,
             matrix.M21 * vector.X + matrix.M22 * vector.Y + matrix.M23 * vector.Z,
@@ -186,13 +186,13 @@ public readonly struct Matrix3 : IEquatable<Matrix3>
     /// <summary>
     /// Creates a translation matrix.
     /// </summary>
-    public static Matrix3 CreateTranslation(Vector2 translation) =>
+    public static Matrix3 CreateTranslation(Vector2D translation) =>
         new(1, 0, translation.X, 0, 1, translation.Y, 0, 0, 1);
 
     /// <summary>
     /// Creates a scale matrix.
     /// </summary>
-    public static Matrix3 CreateScale(Vector2 scale) => new(scale.X, 0, 0, 0, scale.Y, 0, 0, 0, 1);
+    public static Matrix3 CreateScale(Vector2D scale) => new(scale.X, 0, 0, 0, scale.Y, 0, 0, 0, 1);
 
     /// <summary>
     /// Creates a rotation matrix around the Z axis.

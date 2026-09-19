@@ -10,17 +10,17 @@ public readonly struct Line : IEquatable<Line>
     /// <summary>
     /// Gets the origin point of the line.
     /// </summary>
-    public readonly Vector3 Origin;
+    public readonly Vector3D Origin;
 
     /// <summary>
     /// Gets the direction of the line.
     /// </summary>
-    public readonly Vector3 Direction;
+    public readonly Vector3D Direction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Line"/> struct.
     /// </summary>
-    public Line(Vector3 origin, Vector3 direction)
+    public Line(Vector3D origin, Vector3D direction)
     {
         Origin = origin;
         Direction = direction;
@@ -29,7 +29,7 @@ public readonly struct Line : IEquatable<Line>
     /// <summary>
     /// Gets a point on the line at the specified parameter.
     /// </summary>
-    public Vector3 GetPoint(double distance) => Origin + Direction * distance;
+    public Vector3D GetPoint(double distance) => Origin + Direction * distance;
 
     /// <inheritdoc />
     public bool Equals(Line other) => Origin == other.Origin && Direction == other.Direction;

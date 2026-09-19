@@ -308,7 +308,7 @@ public readonly struct Matrix4 : IEquatable<Matrix4>
     /// <summary>
     /// Multiplies a matrix by a vector.
     /// </summary>
-    public static Vector4 operator *(Matrix4 matrix, Vector4 vector) =>
+    public static Vector4D operator *(Matrix4 matrix, Vector4D vector) =>
         new(
             matrix.M11 * vector.X
                 + matrix.M12 * vector.Y
@@ -341,13 +341,13 @@ public readonly struct Matrix4 : IEquatable<Matrix4>
     /// <summary>
     /// Creates a translation matrix.
     /// </summary>
-    public static Matrix4 CreateTranslation(Vector3 translation) =>
+    public static Matrix4 CreateTranslation(Vector3D translation) =>
         new(1, 0, 0, translation.X, 0, 1, 0, translation.Y, 0, 0, 1, translation.Z, 0, 0, 0, 1);
 
     /// <summary>
     /// Creates a scaling matrix.
     /// </summary>
-    public static Matrix4 CreateScale(Vector3 scale) =>
+    public static Matrix4 CreateScale(Vector3D scale) =>
         new(scale.X, 0, 0, 0, 0, scale.Y, 0, 0, 0, 0, scale.Z, 0, 0, 0, 0, 1);
 
     /// <summary>

@@ -10,7 +10,7 @@ public readonly struct Circle : IEquatable<Circle>
     /// <summary>
     /// Gets the center point of the circle.
     /// </summary>
-    public readonly Vector2 Center;
+    public readonly Vector2D Center;
 
     /// <summary>
     /// Gets the radius of the circle.
@@ -20,7 +20,7 @@ public readonly struct Circle : IEquatable<Circle>
     /// <summary>
     /// Initializes a new instance of the <see cref="Circle"/> struct.
     /// </summary>
-    public Circle(Vector2 center, double radius)
+    public Circle(Vector2D center, double radius)
     {
         Center = center;
         Radius = radius;
@@ -44,8 +44,8 @@ public readonly struct Circle : IEquatable<Circle>
     /// <summary>
     /// Determines whether a point is inside or on the circle.
     /// </summary>
-    public bool Contains(Vector2 point) =>
-        Vector2.DistanceSquared(Center, point) <= Radius * Radius;
+    public bool Contains(Vector2D point) =>
+        Vector2D.DistanceSquared(Center, point) <= Radius * Radius;
 
     /// <inheritdoc />
     public bool Equals(Circle other) => Center == other.Center && Radius == other.Radius;
