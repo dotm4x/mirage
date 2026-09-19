@@ -91,10 +91,7 @@ public class NodeTest
     {
         var direct = new Node("Direct", tags: ["target"]);
         var nested = new Node("Nested", tags: ["target"]);
-        var parent = new Node(
-            "Parent",
-            subnodes: [direct, new Node("Branch", subnodes: [nested])]
-        );
+        var parent = new Node("Parent", subnodes: [direct, new Node("Branch", subnodes: [nested])]);
 
         Assert.Equal([direct], parent.Subnodes.GetByTag("target").ToArray());
         Assert.Equal([direct, nested], parent.Subnodes.GetByTag("target", true).ToArray());
