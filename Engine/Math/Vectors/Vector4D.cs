@@ -44,7 +44,8 @@ public readonly struct Vector4D(double x = 0, double y = 0, double z = 0, double
         new(left.X - right.X, left.Y - right.Y, left.Z - right.Z, left.W - right.W);
 
     /// <inheritdoc />
-    public static Vector4D operator -(Vector4D value) => new(-value.X, -value.Y, -value.Z, -value.W);
+    public static Vector4D operator -(Vector4D value) =>
+        new(-value.X, -value.Y, -value.Z, -value.W);
 
     /// <inheritdoc />
     public static Vector4D operator *(Vector4D value, double scalar) =>
