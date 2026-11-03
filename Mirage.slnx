@@ -2,4 +2,7 @@
   <Folder Name="/Source/">
     <Project Path="Source/Common/Mirage.Common.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Test.csproj" />
+  </Folder>
 </Solution>
