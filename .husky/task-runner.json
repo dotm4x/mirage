@@ -1,0 +1,17 @@
+{
+  "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+  "tasks": [
+    {
+      "name": "csharpier-staged",
+      "group": "pre-commit",
+      "command": "sh",
+      "args": [".husky/tasks/format-staged.sh"]
+    },
+    {
+      "name": "commit-message-lint",
+      "group": "commit-msg",
+      "command": "dotnet",
+      "args": ["commit-lint", "--commit-file", "${args}"]
+    }
+  ]
+}
