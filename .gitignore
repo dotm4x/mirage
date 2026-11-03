@@ -1,0 +1,24 @@
+# Build artifacts
+Build/
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+
+# .NET
+*.user
+*.suo
+*.cache
+
+# IDE
+.idea/
+.vs/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local tools manifest cache
+.dotnet/

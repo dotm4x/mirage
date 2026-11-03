@@ -1,0 +1,6 @@
+.idea/
+.opencode/
+**/bin/
+**/obj/
+*.slnx
+Build/
