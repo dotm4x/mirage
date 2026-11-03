@@ -14,7 +14,9 @@ obj/
 # IDE
 .idea/
 .vs/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # OS
 .DS_Store
