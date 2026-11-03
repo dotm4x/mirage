@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -37,25 +39,8 @@ jobs:
       - name: Test
         run: dotnet test --no-build --configuration Release
 
-  commitlint:
-    name: Lint commit messages
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Restore tools
-        run: dotnet tool restore
-
-      - name: Validate commits
+      - name: Lint commit messages
+        if: github.event_name == 'pull_request'
         env:
           DOTNET_ROLL_FORWARD: Major
         run: |
